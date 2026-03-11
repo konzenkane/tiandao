@@ -244,6 +244,42 @@
             animation: fadeInUp 1s ease-out;
         }
         
+        /* 用户统计 */
+        .user-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 30px;
+            padding: 10px 25px;
+            margin-top: 15px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+        
+        .user-stats-icon {
+            font-size: 1.2rem;
+        }
+        
+        .user-stats-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        .user-stats-number {
+            color: var(--primary-gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        
+        .user-stats-label {
+            color: #4CAF50;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -808,6 +844,13 @@
         </div>
         <h1>天道元一</h1>
         <p class="tagline">AI智能命理 · 鸿蒙开天 · 知命改运</p>
+        <div class="user-stats">
+            <span class="user-stats-icon">👥</span>
+            <span class="user-stats-text">已有</span>
+            <span class="user-stats-number" id="userCount">928,666</span>
+            <span class="user-stats-text">位缘主</span>
+            <span class="user-stats-label">● 在线</span>
+        </div>
         <div class="free-badge">✨ 每日免费8次</div>
     </header>
 
@@ -1495,7 +1538,52 @@
             
             // 检查VIP状态
             checkVIPStatus();
+            
+            // 初始化用户统计数字动画
+            initUserCount();
         });
+        
+        // 用户统计数字动画
+        function initUserCount() {
+            const targetCount = 928666; // 目标数字
+            const duration = 2000; // 动画时长2秒
+            const element = document.getElementById('userCount');
+            
+            let startTime = null;
+            const startCount = Math.floor(targetCount * 0.95); // 从95%开始
+            
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 缓动函数
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const currentCount = Math.floor(startCount + (targetCount - startCount) * easeOut);
+                
+                // 格式化数字
+                element.textContent = formatNumber(currentCount);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            requestAnimationFrame(animate);
+            
+            // 每隔一段时间随机增加（模拟实时用户）
+            setInterval(() => {
+                const currentText = element.textContent.replace(/,/g, '');
+                const current = parseInt(currentText) || targetCount;
+                const increment = Math.floor(Math.random() * 3) + 1; // 随机增加1-3
+                element.textContent = formatNumber(current + increment);
+            }, 15000); // 每15秒增加一次
+        }
+        
+        // 数字格式化（添加千分位逗号）
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
     </script>
 </body>
 </html>
