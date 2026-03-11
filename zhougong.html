@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周公解梦 - 天道元一</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #FFD700;
+            --primary-crimson: #C41E3A;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(20, 20, 30, 0.95);
+            --text-light: #f0f0f0;
+            --text-muted: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary-gold);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .dream-categories {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .category-btn:hover, .category-btn.active {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: var(--primary-gold);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .dream-overview {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(196, 30, 58, 0.1) 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .dream-emoji {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .dream-category {
+            font-size: 1.3rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .dream-luck {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .luck-good {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .luck-medium {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFC107;
+        }
+
+        .luck-bad {
+            background: rgba(244, 67, 54, 0.3);
+            color: #F44336;
+        }
+
+        .interpretation-section {
+            margin-bottom: 25px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border-left: 4px solid var(--primary-gold);
+        }
+
+        .interpretation-section h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .interpretation-section p {
+            color: var(--text-light);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .lucky-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .lucky-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .lucky-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .lucky-value {
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .paywall {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .paywall h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .hot-dreams {
+            margin-top: 30px;
+        }
+
+        .hot-dreams h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .dream-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .dream-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            color: var(--text-light);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dream-tag:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--primary-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← 返回首页</a>
+            <h1>🌙 周公解梦</h1>
+            <p class="subtitle">输入梦境内容，AI智能解梦</p>
+        </header>
+
+        <div class="form-card" id="inputForm">
+            <form id="dreamForm">
+                <div class="form-group">
+                    <label>🏷️ 选择梦境类别</label>
+                    <div class="dream-categories">
+                        <div class="category-btn active" data-category="人物">👤 人物</div>
+                        <div class="category-btn" data-category="动物">🐾 动物</div>
+                        <div class="category-btn" data-category="自然">🌿 自然</div>
+                        <div class="category-btn" data-category="建筑">🏠 建筑</div>
+                        <div class="category-btn" data-category="物品">📦 物品</div>
+                        <div class="category-btn" data-category="行为">🏃 行为</div>
+                        <div class="category-btn" data-category="情绪">💭 情绪</div>
+                        <div class="category-btn" data-category="其他">✨ 其他</div>
+                    </div>
+                    <input type="hidden" id="dreamCategory" value="人物">
+                </div>
+
+                <div class="form-group">
+                    <label>📝 描述您的梦境</label>
+                    <textarea id="dreamContent" placeholder="请详细描述您的梦境，例如：梦见自己在高山上飞翔，看到美丽的风景..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>😊 梦境情绪</label>
+                    <select id="dreamMood">
+                        <option value="愉快">😊 愉快/开心</option>
+                        <option value="平静">😌 平静/安宁</option>
+                        <option value="紧张">😰 紧张/焦虑</option>
+                        <option value="恐惧">😱 恐惧/害怕</option>
+                        <option value="悲伤">😢 悲伤/难过</option>
+                        <option value="愤怒">😠 愤怒/生气</option>
+                        <option value="困惑">🤔 困惑/迷茫</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">🔮 开始解梦</button>
+            </form>
+
+            <div class="hot-dreams">
+                <h3>🔥 热门梦境</h3>
+                <div class="dream-tags">
+                    <span class="dream-tag" onclick="fillDream('梦见蛇')">梦见蛇</span>
+                    <span class="dream-tag" onclick="fillDream('梦见水')">梦见水</span>
+                    <span class="dream-tag" onclick="fillDream('梦见飞翔')">梦见飞翔</span>
+                    <span class="dream-tag" onclick="fillDream('梦见掉牙')">梦见掉牙</span>
+                    <span class="dream-tag" onclick="fillDream('梦见考试')">梦见考试</span>
+                    <span class="dream-tag" onclick="fillDream('梦见怀孕')">梦见怀孕</span>
+                    <span class="dream-tag" onclick="fillDream('梦见死人')">梦见死人</span>
+                    <span class="dream-tag" onclick="fillDream('梦见结婚')">梦见结婚</span>
+                    <span class="dream-tag" onclick="fillDream('梦见火灾')">梦见火灾</span>
+                    <span class="dream-tag" onclick="fillDream('梦见下雨')">梦见下雨</span>
+                    <span class="dream-tag" onclick="fillDream('梦见金钱')">梦见金钱</span>
+                    <span class="dream-tag" onclick="fillDream('梦见爬山')">梦见爬山</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2 class="result-title">🌙 梦境解析</h2>
+            
+            <div class="dream-overview">
+                <div class="dream-emoji" id="dreamEmoji">🐍</div>
+                <div class="dream-category" id="dreamCategoryResult">动物类梦境</div>
+                <div class="dream-luck luck-good" id="dreamLuck">吉梦</div>
+            </div>
+
+            <div class="interpretation-section">
+                <h3>📖 梦境解析</h3>
+                <p id="dreamInterpretation">根据周公解梦，此梦预示着...</p>
+            </div>
+
+            <div class="interpretation-section">
+                <h3>💡 心理分析</h3>
+                <p id="psychologyAnalysis">从心理学角度分析，此梦反映了...</p>
+            </div>
+
+            <div class="interpretation-section">
+                <h3>🔮 运势预示</h3>
+                <p id="fortunePrediction">此梦对您近期运势的预示...</p>
+                <div class="lucky-info">
+                    <div class="lucky-item">
+                        <span class="lucky-label">财运指数</span>
+                        <span class="lucky-value" id="wealthLuck">★★★★☆</span>
+                    </div>
+                    <div class="lucky-item">
+                        <span class="lucky-label">事业指数</span>
+                        <span class="lucky-value" id="careerLuck">★★★★★</span>
+                    </div>
+                    <div class="lucky-item">
+                        <span class="lucky-label">感情指数</span>
+                        <span class="lucky-value" id="loveLuck">★★★☆☆</span>
+                    </div>
+                    <div class="lucky-item">
+                        <span class="lucky-label">健康指数</span>
+                        <span class="lucky-value" id="healthLuck">★★★★☆</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interpretation-section">
+                <h3>⚠️ 注意事项</h3>
+                <p id="dreamWarning">根据此梦，您需要注意...</p>
+            </div>
+
+            <div class="interpretation-section">
+                <h3>🎁 开运建议</h3>
+                <p id="luckyAdvice">根据您的梦境，为您提供以下开运建议...</p>
+            </div>
+
+            <div class="paywall" id="paywall">
+                <span class="vip-badge">VIP专属</span>
+                <h3>🔮 查看完整解梦报告</h3>
+                <p>升级VIP解锁详细流年运势、梦境预警、化解方法</p>
+                <button class="submit-btn" onclick="showPayment()" style="margin-top: 20px;">升级VIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 周公解梦数据库
+        const dreamData = {
+            categories: {
+                '人物': { emoji: '👤', luck: ['吉', '中', '吉', '吉', '中', '凶', '吉', '中'] },
+                '动物': { emoji: '🐾', luck: ['中', '吉', '凶', '吉', '中', '吉', '凶', '中'] },
+                '自然': { emoji: '🌿', luck: ['吉', '吉', '中', '吉', '凶', '中', '吉', '吉'] },
+                '建筑': { emoji: '🏠', luck: ['吉', '中', '吉', '中', '吉', '凶', '中', '吉'] },
+                '物品': { emoji: '📦', luck: ['吉', '吉', '中', '中', '吉', '中', '凶', '吉'] },
+                '行为': { emoji: '🏃', luck: ['中', '吉', '吉', '中', '凶', '吉', '中', '中'] },
+                '情绪': { emoji: '💭', luck: ['中', '中', '凶', '吉', '中', '中', '吉', '凶'] },
+                '其他': { emoji: '✨', luck: ['吉', '中', '中', '吉', '中', '中', '吉', '中'] }
+            },
+            interpretations: [
+                '此梦预示着近期运势上升，好事将近。您可能会遇到贵人相助，事业或学业有所突破。建议把握机会，积极进取。',
+                '此梦暗示您内心有未解决的问题或压力。建议静下心来，理清思路，寻求朋友或家人的帮助，共同面对困难。',
+                '此梦预示着财运亨通，可能会有意外之财。但需注意理财，避免冲动消费。投资需谨慎，量力而行。',
+                '此梦暗示感情方面会有新的发展。单身者有望遇到心仪对象，已婚者感情更加甜蜜。建议多关心伴侣，增进感情。',
+                '此梦预示着健康状况需要关注。建议调整作息，加强锻炼，注意饮食健康。如有不适，及时就医检查。',
+                '此梦暗示事业上可能面临挑战，但也是成长的机会。建议保持冷静，积极应对，相信自己的能力。',
+                '此梦预示着人际关系将有变化。可能会结识新朋友，或与旧友重逢。建议珍惜缘分，真诚待人。',
+                '此梦暗示您近期需要做出重要决定。建议多听取他人意见，权衡利弊，相信自己的直觉做出选择。'
+            ],
+            psychology: [
+                '从心理学角度，此梦反映了您潜意识中的渴望和焦虑。梦境是内心世界的投射，建议您关注自己的真实需求。',
+                '此梦可能源于您白天的经历或思考。大脑在睡眠中整理信息，将记忆和情绪编织成梦境，不必过度解读。',
+                '从弗洛伊德理论看，此梦可能代表被压抑的欲望或情感。建议您正视内心，找到健康的宣泄方式。',
+                '此梦反映了您对未来的期待或担忧。建议您制定明确目标，将焦虑转化为动力，积极面对生活。',
+                '从荣格分析心理学看，此梦可能包含集体无意识的象征。这些原型意象代表人类共同的心理经验。',
+                '此梦可能与您近期的生活压力有关。建议您学会放松，通过运动、冥想等方式缓解压力。',
+                '从认知心理学角度，此梦是大脑信息加工的结果。梦境内容往往与您的关注点和情绪状态相关。',
+                '此梦可能暗示您需要改变现状。建议您勇敢迈出第一步，改变从行动开始，不要被恐惧束缚。'
+            ],
+            fortunePredictions: [
+                '此梦预示着近期整体运势良好，事业顺利，财运亨通。建议您把握机会，大胆尝试，会有不错的收获。',
+                '此梦暗示近期运势平稳，没有大的起伏。建议您保持现状，稳扎稳打，等待更好的时机。',
+                '此梦预示着近期可能会遇到一些小挫折，但不必过于担心。困难是暂时的，坚持下去就会好转。',
+                '此梦暗示近期人际关系活跃，社交运佳。建议您多参加聚会活动，扩大人脉，会有意外收获。',
+                '此梦预示着近期学习运佳，适合充电提升。建议您利用这段时间学习新技能，为未来发展做准备。',
+                '此梦暗示近期需要注意健康问题，避免过度劳累。建议您调整作息，加强锻炼，保持身心健康。',
+                '此梦预示着近期财运波动，需谨慎理财。建议您控制开支，避免高风险投资，稳扎稳打。',
+                '此梦暗示近期感情运势起伏，需要用心经营。建议您多沟通理解，包容对方，感情会更加稳固。'
+            ],
+            warnings: [
+                '近期需注意人际关系，避免口舌是非。说话前三思，不要轻易承诺，以免给自己带来麻烦。',
+                '投资理财需谨慎，避免冲动决策。不要被高收益诱惑，谨防诈骗，保护好自己的财产安全。',
+                '健康方面需要关注，避免过度劳累。建议定期体检，发现问题及时治疗，不要拖延。',
+                '工作中需谨言慎行，避免与同事发生冲突。保持低调，做好本职工作，不要参与办公室政治。',
+                '出行需注意安全，遵守交通规则。避免夜间单独外出，保管好个人财物，提高安全意识。',
+                '感情方面需多沟通，避免误会。不要冷战，有问题及时解决，珍惜眼前人。',
+                '近期不宜做重大决定，建议观望等待。多听取他人意见，不要一意孤行，以免后悔。',
+                '注意饮食健康，避免暴饮暴食。少吃油腻辛辣食物，多吃蔬菜水果，保持饮食规律。'
+            ],
+            advices: [
+                '建议您佩戴玉器或水晶饰品，有助于提升运势。多穿红色、金色系衣服，增强个人气场。',
+                '您的幸运方位是东南方，多往这个方向活动，有助于提升运势。办公桌可朝向东南摆放。',
+                '建议您在卧室放置一盆绿植，如富贵竹或发财树，增添生气，催旺运势。',
+                '您的幸运数字是6和8，重要日子可选择带有这些数字的日期，有助于事情顺利进行。',
+                '建议您多行善积德，帮助他人，积累福报。善心善行会让您的运势越来越好。',
+                '保持乐观积极的心态，微笑面对生活。良好的心态是最好的风水，会让您容光焕发。',
+                '建议您定期整理家居环境，保持整洁明亮。良好的居住环境会让您心情舒畅，运势提升。',
+                '多与正能量的人交往，远离负能量。良好的人际关系会让您的运势更加顺畅。'
+            ],
+            stars: ['★☆☆☆☆', '★★☆☆☆', '★★★☆☆', '★★★★☆', '★★★★★']
+        };
+
+        // 类别选择
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('dreamCategory').value = this.dataset.category;
+            });
+        });
+
+        // 填充梦境
+        function fillDream(dream) {
+            document.getElementById('dreamContent').value = dream;
+        }
+
+        document.getElementById('dreamForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const category = document.getElementById('dreamCategory').value;
+            const content = document.getElementById('dreamContent').value;
+            const mood = document.getElementById('dreamMood').value;
+            
+            // 生成随机种子
+            const seed = category + content + mood + Math.floor(Math.random() * 1000);
+            const randomIndex = (seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 8;
+            
+            // 获取类别信息
+            const categoryInfo = dreamData.categories[category];
+            
+            // 确定吉凶
+            const luck = categoryInfo.luck[randomIndex];
+            let luckClass, luckText;
+            if (luck === '吉') {
+                luckClass = 'luck-good';
+                luckText = '吉梦';
+            } else if (luck === '凶') {
+                luckClass = 'luck-bad';
+                luckText = '凶梦';
+            } else {
+                luckClass = 'luck-medium';
+                luckText = '中平';
+            }
+            
+            // 更新结果
+            document.getElementById('dreamEmoji').textContent = categoryInfo.emoji;
+            document.getElementById('dreamCategoryResult').textContent = category + '类梦境';
+            document.getElementById('dreamLuck').textContent = luckText;
+            document.getElementById('dreamLuck').className = 'dream-luck ' + luckClass;
+            
+            // 更新解析内容
+            document.getElementById('dreamInterpretation').textContent = dreamData.interpretations[randomIndex];
+            document.getElementById('psychologyAnalysis').textContent = dreamData.psychology[(randomIndex + 1) % 8];
+            document.getElementById('fortunePrediction').textContent = dreamData.fortunePredictions[(randomIndex + 2) % 8];
+            document.getElementById('dreamWarning').textContent = dreamData.warnings[(randomIndex + 3) % 8];
+            document.getElementById('luckyAdvice').textContent = dreamData.advices[(randomIndex + 4) % 8];
+            
+            // 更新运势指数
+            const wealthStars = 2 + Math.floor(Math.random() * 3);
+            const careerStars = 2 + Math.floor(Math.random() * 3);
+            const loveStars = 2 + Math.floor(Math.random() * 3);
+            const healthStars = 2 + Math.floor(Math.random() * 3);
+            
+            document.getElementById('wealthLuck').textContent = dreamData.stars[wealthStars];
+            document.getElementById('careerLuck').textContent = dreamData.stars[careerStars];
+            document.getElementById('loveLuck').textContent = dreamData.stars[loveStars];
+            document.getElementById('healthLuck').textContent = dreamData.stars[healthStars];
+            
+            // 显示结果
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('resultSection').classList.add('active');
+        });
+
+        function showPayment() {
+            alert('感谢您的支持！\n\n请联系客服完成支付：\n电话：180-5812-5388\n微信：80506070');
+        }
+    </script>
+</body>
+</html>

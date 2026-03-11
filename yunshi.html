@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>每日运势 - 天道元一</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #f0f0f0;
+        }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
+        
+        /* 头部 */
+        .header { text-align: center; padding: 30px 0; margin-bottom: 20px; }
+        .header h1 { font-size: 32px; background: linear-gradient(135deg, #FFD700, #FF69B4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .date-display { color: #888; font-size: 16px; }
+        .lunar-date { color: #FFD700; font-size: 14px; margin-top: 5px; }
+        
+        /* 打卡按钮 */
+        .checkin-btn {
+            position: fixed; top: 20px; right: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        .checkin-btn.checked { background: #4CAF50; color: #fff; }
+        
+        /* 卡片 */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-title { font-size: 18px; color: #FFD700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* 运势分数 */
+        .score-display { text-align: center; padding: 30px; }
+        .score-circle {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(#FFD700 var(--score), rgba(255,255,255,0.1) 0);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .score-circle::before {
+            content: ''; position: absolute;
+            width: 120px; height: 120px;
+            background: #0a0a0f;
+            border-radius: 50%;
+        }
+        .score-number { position: relative; z-index: 1; font-size: 48px; color: #FFD700; font-weight: bold; }
+        .score-label { color: #888; font-size: 14px; }
+        
+        /* 运势维度 */
+        .aspect-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+        .aspect-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .aspect-icon { font-size: 28px; margin-bottom: 8px; }
+        .aspect-name { color: #888; font-size: 13px; margin-bottom: 5px; }
+        .aspect-stars { color: #FFD700; font-size: 14px; }
+        
+        /* 幸运信息 */
+        .lucky-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .lucky-item {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+        }
+        .lucky-icon { font-size: 32px; margin-bottom: 10px; }
+        .lucky-label { color: #888; font-size: 12px; }
+        .lucky-value { color: #FFD700; font-size: 15px; font-weight: bold; margin-top: 5px; }
+        
+        /* 时辰运势 */
+        .hourly-section { margin: 20px 0; }
+        .hourly-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+        .hourly-tab {
+            flex-shrink: 0;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            min-width: 100px;
+        }
+        .hourly-tab.active { border-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .hourly-tab .time { color: #FFD700; font-size: 16px; font-weight: bold; }
+        .hourly-tab .period { color: #888; font-size: 12px; margin-top: 5px; }
+        .hourly-tab .fortune { font-size: 24px; margin-top: 10px; }
+        
+        .hourly-detail {
+            background: rgba(255, 215, 0, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .hourly-detail-title { color: #FFD700; font-size: 16px; margin-bottom: 10px; }
+        .hourly-detail-content { color: #f0f0f0; font-size: 14px; line-height: 1.8; }
+        .hourly-suggest { 
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #FFD700;
+        }
+        
+        /* 打卡记录 */
+        .checkin-calendar { margin: 20px 0; }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 14px;
+            position: relative;
+        }
+        .calendar-day.checked { background: rgba(76, 175, 80, 0.3); }
+        .calendar-day.checked::after {
+            content: '✓'; position: absolute; bottom: 2px; right: 2px;
+            font-size: 10px; color: #4CAF50;
+        }
+        .calendar-day.today { border: 2px solid #FFD700; }
+        
+        /* 宜忌 */
+        .yiji-row { display: flex; gap: 15px; }
+        .yiji-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .yiji-title { font-size: 18px; margin-bottom: 10px; }
+        .yiji-title.yi { color: #4CAF50; }
+        .yiji-title.ji { color: #f44336; }
+        .yiji-content { color: #f0f0f0; font-size: 14px; line-height: 1.6; }
+        
+        /* 小贴士 */
+        .tips-list { list-style: none; }
+        .tips-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex; align-items: flex-start;
+            gap: 12px;
+        }
+        .tips-icon { font-size: 20px; flex-shrink: 0; }
+        .tips-text { color: #f0f0f0; font-size: 14px; line-height: 1.6; }
+        
+        /* 按钮 */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* 加载动画 */
+        .loading { text-align: center; padding: 50px; }
+        .loading-spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="checkin-btn" id="checkinBtn" onclick="toggleCheckin()">📍 打卡</button>
+        
+        <div class="header">
+            <h1>✨ 每日运势</h1>
+            <div class="date-display" id="dateDisplay"></div>
+            <div class="lunar-date" id="lunarDate"></div>
+        </div>
+
+        <!-- 输入区 -->
+        <div id="inputSection">
+            <div class="card">
+                <div class="card-title">🎯 选择您的生肖</div>
+                <div class="lucky-grid" id="zodiacGrid">
+                    <!-- 动态生成 -->
+                </div>
+                <button class="btn-primary" onclick="generateFortune()">查看今日运势</button>
+            </div>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loadingSection" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <div style="color: #FFD700;">正在为您测算运势...</div>
+        </div>
+
+        <!-- 结果区 -->
+        <div id="resultSection" class="hidden">
+            <!-- 综合运势 -->
+            <div class="card">
+                <div class="card-title">📊 综合运势</div>
+                <div class="score-display">
+                    <div class="score-circle" id="scoreCircle" style="--score: 0%;">
+                        <div class="score-number" id="scoreNumber">0</div>
+                    </div>
+                    <div class="score-label">今日运势指数</div>
+                </div>
+                
+                <div class="aspect-grid">
+                    <div class="aspect-item">
+                        <div class="aspect-icon">💼</div>
+                        <div class="aspect-name">事业运</div>
+                        <div class="aspect-stars" id="careerStars"></div>
+                    </div>
+                    <div class="aspect-item">
+                        <div class="aspect-icon">💕</div>
+                        <div class="aspect-name">感情运</div>
+                        <div class="aspect-stars" id="loveStars"></div>
+                    </div>
+                    <div class="aspect-item">
+                        <div class="aspect-icon">💰</div>
+                        <div class="aspect-name">财运</div>
+                        <div class="aspect-stars" id="moneyStars"></div>
+                    </div>
+                    <div class="aspect-item">
+                        <div class="aspect-icon">🏃</div>
+                        <div class="aspect-name">健康运</div>
+                        <div class="aspect-stars" id="healthStars"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 开运指南 -->
+            <div class="card">
+                <div class="card-title">🍀 开运指南</div>
+                <div class="lucky-grid">
+                    <div class="lucky-item">
+                        <div class="lucky-icon" id="luckyColorIcon">🔴</div>
+                        <div class="lucky-label">幸运色</div>
+                        <div class="lucky-value" id="luckyColor">红色</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-icon" id="luckyNumberIcon">8️⃣</div>
+                        <div class="lucky-label">幸运数字</div>
+                        <div class="lucky-value" id="luckyNumber">8</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-icon" id="luckyDirectionIcon">📍</div>
+                        <div class="lucky-label">吉利方位</div>
+                        <div class="lucky-value" id="luckyDirection">东南</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-icon" id="luckyItemIcon">💎</div>
+                        <div class="lucky-label">开运物品</div>
+                        <div class="lucky-value" id="luckyItem">水晶</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-icon" id="luckyFoodIcon">🍎</div>
+                        <div class="lucky-label">开运食物</div>
+                        <div class="lucky-value" id="luckyFood">苹果</div>
+                    </div>
+                    <div class="lucky-item">
+                        <div class="lucky-icon">🐉</div>
+                        <div class="lucky-label">贵人属相</div>
+                        <div class="lucky-value" id="luckyZodiac">龙</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时辰运势 -->
+            <div class="card">
+                <div class="card-title">⏰ 时辰运势</div>
+                <div class="hourly-tabs" id="hourlyTabs">
+                    <!-- 动态生成 -->
+                </div>
+                <div class="hourly-detail" id="hourlyDetail">
+                    <div class="hourly-detail-title">🌅 卯时 (05:00-07:00)</div>
+                    <div class="hourly-detail-content" id="hourlyContent">
+                        日出东方，阳气渐升。此时适合早起锻炼，规划一天的工作。
+                    </div>
+                    <div class="hourly-suggest" id="hourlySuggest">
+                        💡 建议：适合晨练、制定计划
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打卡记录 -->
+            <div class="card">
+                <div class="card-title">📅 本月打卡</div>
+                <div class="checkin-calendar">
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 宜忌 -->
+            <div class="card">
+                <div class="card-title">📋 今日宜忌</div>
+                <div class="yiji-row">
+                    <div class="yiji-box">
+                        <div class="yiji-title yi">✓ 宜</div>
+                        <div class="yiji-content" id="yiContent">签约、出行、求财</div>
+                    </div>
+                    <div class="yiji-box">
+                        <div class="yiji-title ji">✗ 忌</div>
+                        <div class="yiji-content" id="jiContent">动土、争吵、借贷</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 开运小贴士 -->
+            <div class="card">
+                <div class="card-title">💡 开运小贴士</div>
+                <ul class="tips-list" id="tipsList">
+                    <!-- 动态生成 -->
+                </ul>
+            </div>
+
+            <button class="btn-primary" onclick="resetForm()">重新测算</button>
+        </div>
+    </div>
+
+    <script>
+        // 数据
+        const zodiacs = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+        const zodiacIcons = ['🐭', '🐮', '🐯', '🐰', '🐉', '🐍', '🐴', '🐑', '🐒', '🐔', '🐕', '🐷'];
+        const colors = [
+            { name: '红色', icon: '🔴', desc: '旺事业' },
+            { name: '金色', icon: '🟡', desc: '旺财运' },
+            { name: '绿色', icon: '🟢', desc: '旺健康' },
+            { name: '蓝色', icon: '🔵', desc: '旺智慧' },
+            { name: '紫色', icon: '🟣', desc: '旺人缘' }
+        ];
+        const numbers = [3, 6, 8, 9, 11, 16, 18, 21, 28, 33];
+        const directions = ['东', '南', '西', '北', '东南', '东北', '西南', '西北'];
+        const items = [
+            { name: '水晶', icon: '💎' },
+            { name: '玉器', icon: '🟢' },
+            { name: '红绳', icon: '🧶' },
+            { name: '铜钱', icon: '🪙' },
+            { name: '文昌笔', icon: '✏️' }
+        ];
+        const foods = [
+            { name: '苹果', icon: '🍎' },
+            { name: '橙子', icon: '🍊' },
+            { name: '葡萄', icon: '🍇' },
+            { name: '桃子', icon: '🍑' },
+            { name: '红枣', icon: '🔴' }
+        ];
+        
+        const hourlyData = [
+            { time: '子时', period: '23:00-01:00', icon: '🌙', desc: '夜深人静，宜早睡养神，不宜熬夜。', suggest: '💡 建议：早点休息，保证充足睡眠' },
+            { time: '丑时', period: '01:00-03:00', icon: '😴', desc: '深度睡眠时段，肝脏排毒，务必熟睡。', suggest: '💡 建议：深度睡眠，养肝护体' },
+            { time: '寅时', period: '03:00-05:00', icon: '🌅', desc: '阳气初生，适合早起练功、打坐冥想。', suggest: '💡 建议：早起练功，吸收阳气' },
+            { time: '卯时', period: '05:00-07:00', icon: '🌄', desc: '日出东方，适合晨练、制定计划。', suggest: '💡 建议：晨练、规划一天' },
+            { time: '辰时', period: '07:00-09:00', icon: '🍜', desc: '胃经当令，适合吃早餐、处理重要事务。', suggest: '💡 建议：吃好早餐，处理要事' },
+            { time: '巳时', period: '09:00-11:00', icon: '💼', desc: '精力充沛，适合开会、谈判、学习。', suggest: '💡 建议：高效工作，把握机会' }
+        ];
+        
+        const tipsList = [
+            '今日穿' + colors[0].name + '有助于提升事业运',
+            '佩戴' + items[0].name + '可增强财运',
+            '多吃' + foods[0].name + '有益健康',
+            '今日适合向' + directions[0] + '方出行',
+            '保持微笑，好运自然来',
+            '遇到贵人要主动打招呼',
+            '今日不宜做重大决定',
+            '多与家人沟通，增进感情'
+        ];
+
+        let selectedZodiac = 0;
+        let currentHourlyIndex = 4; // 默认显示辰时
+
+        // 初始化
+        function init() {
+            // 显示日期
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+            document.getElementById('dateDisplay').textContent = dateStr;
+            document.getElementById('lunarDate').textContent = '农历' + ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'][now.getMonth()] + '月初' + ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五'][now.getDate() % 15];
+            
+            // 生成生肖选择
+            let zodiacHtml = '';
+            zodiacs.forEach((z, i) => {
+                zodiacHtml += `
+                    <div class="lucky-item" onclick="selectZodiac(${i})" style="cursor: pointer; border: 2px solid ${i === 0 ? '#FFD700' : 'transparent'};" id="zodiac${i}">
+                        <div class="lucky-icon">${zodiacIcons[i]}</div>
+                        <div class="lucky-value">${z}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('zodiacGrid').innerHTML = zodiacHtml;
+            
+            // 加载打卡记录
+            loadCheckinData();
+        }
+
+        function selectZodiac(index) {
+            selectedZodiac = index;
+            document.querySelectorAll('#zodiacGrid .lucky-item').forEach((el, i) => {
+                el.style.borderColor = i === index ? '#FFD700' : 'transparent';
+            });
+        }
+
+        function generateFortune() {
+            document.getElementById('inputSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            
+            setTimeout(() => {
+                // 生成随机分数
+                const score = Math.floor(Math.random() * 25) + 70;
+                document.getElementById('scoreNumber').textContent = score;
+                document.getElementById('scoreCircle').style.setProperty('--score', score + '%');
+                
+                // 生成各方面运势
+                ['career', 'love', 'money', 'health'].forEach(aspect => {
+                    const stars = Math.floor(Math.random() * 3) + 3;
+                    document.getElementById(aspect + 'Stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+                });
+                
+                // 生成幸运信息
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                document.getElementById('luckyColor').textContent = color.name;
+                document.getElementById('luckyColorIcon').textContent = color.icon;
+                
+                document.getElementById('luckyNumber').textContent = numbers[Math.floor(Math.random() * numbers.length)];
+                document.getElementById('luckyDirection').textContent = directions[Math.floor(Math.random() * directions.length)];
+                
+                const item = items[Math.floor(Math.random() * items.length)];
+                document.getElementById('luckyItem').textContent = item.name;
+                document.getElementById('luckyItemIcon').textContent = item.icon;
+                
+                const food = foods[Math.floor(Math.random() * foods.length)];
+                document.getElementById('luckyFood').textContent = food.name;
+                document.getElementById('luckyFoodIcon').textContent = food.icon;
+                
+                document.getElementById('luckyZodiac').textContent = zodiacs[Math.floor(Math.random() * 12)];
+                
+                // 生成时辰运势标签
+                let hourlyHtml = '';
+                hourlyData.forEach((h, i) => {
+                    hourlyHtml += `
+                        <div class="hourly-tab ${i === currentHourlyIndex ? 'active' : ''}" onclick="selectHourly(${i})">
+                            <div class="time">${h.time}</div>
+                            <div class="period">${h.period}</div>
+                            <div class="fortune">${h.icon}</div>
+                        </div>
+                    `;
+                });
+                document.getElementById('hourlyTabs').innerHTML = hourlyHtml;
+                updateHourlyDetail();
+                
+                // 生成宜忌
+                const yiList = ['签约', '出行', '求财', '会友', '学习', '健身'];
+                const jiList = ['动土', '争吵', '借贷', '投资', '搬家', '手术'];
+                document.getElementById('yiContent').textContent = yiList.sort(() => Math.random() - 0.5).slice(0, 3).join('、');
+                document.getElementById('jiContent').textContent = jiList.sort(() => Math.random() - 0.5).slice(0, 3).join('、');
+                
+                // 生成小贴士
+                const shuffledTips = [...tipsList].sort(() => Math.random() - 0.5).slice(0, 5);
+                document.getElementById('tipsList').innerHTML = shuffledTips.map((tip, i) => `
+                    <li class="tips-item">
+                        <span class="tips-icon">${['💰', '💖', '🎯', '🏃', '🧘'][i]}</span>
+                        <span class="tips-text">${tip}</span>
+                    </li>
+                `).join('');
+                
+                // 生成日历
+                generateCalendar();
+                
+                // 检查邀请绑定（完成有效行为后触发）
+                checkAndBindInvitation();
+                
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }, 1000);
+        }
+        
+        // 检查并绑定邀请关系
+        function checkAndBindInvitation() {
+            const pendingInviter = localStorage.getItem('fortune_pending_inviter');
+            const pendingCode = localStorage.getItem('fortune_pending_invite_code');
+            
+            if (pendingInviter && pendingCode) {
+                // 获取或生成自己的邀请码
+                let myCode = localStorage.getItem('fortune_my_invite_code');
+                if (!myCode) {
+                    myCode = generateInviteCode();
+                    localStorage.setItem('fortune_my_invite_code', myCode);
+                }
+                
+                // 检查是否已绑定过
+                const boundKey = 'fortune_bound_inviter_' + pendingInviter;
+                if (!localStorage.getItem(boundKey)) {
+                    // 记录邀请关系
+                    const record = {
+                        inviter: pendingInviter,
+                        inviterCode: pendingCode,
+                        invitee: myCode,
+                        timestamp: new Date().toISOString(),
+                        action: 'daily_fortune'
+                    };
+                    
+                    // 保存到邀请记录
+                    let inviteRecords = JSON.parse(localStorage.getItem('fortune_invitation_records') || '[]');
+                    inviteRecords.push(record);
+                    localStorage.setItem('fortune_invitation_records', JSON.stringify(inviteRecords));
+                    
+                    // 标记已绑定
+                    localStorage.setItem(boundKey, 'true');
+                    
+                    // 清除待处理状态
+                    localStorage.removeItem('fortune_pending_inviter');
+                    localStorage.removeItem('fortune_pending_invite_code');
+                    
+                    // 显示成功提示
+                    setTimeout(() => {
+                        alert('🎉 邀请关系绑定成功！\n\n您通过好友邀请完成了今日运势测算，双方都将获得奖励！');
+                    }, 1500);
+                }
+            }
+        }
+        
+        // 生成邀请码
+        function generateInviteCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function selectHourly(index) {
+            currentHourlyIndex = index;
+            document.querySelectorAll('.hourly-tab').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            updateHourlyDetail();
+        }
+
+        function updateHourlyDetail() {
+            const h = hourlyData[currentHourlyIndex];
+            document.querySelector('.hourly-detail-title').textContent = `${h.icon} ${h.time} (${h.period})`;
+            document.getElementById('hourlyContent').textContent = h.desc;
+            document.getElementById('hourlySuggest').textContent = h.suggest;
+        }
+
+        function generateCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            // 获取打卡记录
+            const checkinData = JSON.parse(localStorage.getItem('fortune_checkin_' + year + '_' + month) || '[]');
+            
+            let html = '';
+            // 空白
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div></div>';
+            }
+            // 日期
+            for (let i = 1; i <= daysInMonth; i++) {
+                const isToday = i === now.getDate();
+                const isChecked = checkinData.includes(i);
+                html += `<div class="calendar-day ${isChecked ? 'checked' : ''} ${isToday ? 'today' : ''}">${i}</div>`;
+            }
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        function toggleCheckin() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const day = now.getDate();
+            
+            const key = 'fortune_checkin_' + year + '_' + month;
+            let checkinData = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (checkinData.includes(day)) {
+                // 取消打卡
+                checkinData = checkinData.filter(d => d !== day);
+                document.getElementById('checkinBtn').textContent = '📍 打卡';
+                document.getElementById('checkinBtn').classList.remove('checked');
+            } else {
+                // 打卡
+                checkinData.push(day);
+                document.getElementById('checkinBtn').textContent = '✓ 已打卡';
+                document.getElementById('checkinBtn').classList.add('checked');
+                
+                // 检查连续打卡奖励
+                checkConsecutiveReward();
+            }
+            
+            localStorage.setItem(key, JSON.stringify(checkinData));
+            generateCalendar();
+        }
+        
+        // 检查连续打卡奖励
+        function checkConsecutiveReward() {
+            const consecutiveDays = calculateConsecutiveDays();
+            
+            let rewardMessage = '';
+            let rewardType = '';
+            
+            if (consecutiveDays === 7) {
+                rewardMessage = '🎉 恭喜连续打卡7天！\n\n奖励：大师精批券 × 1';
+                rewardType = 'week';
+            } else if (consecutiveDays === 30) {
+                rewardMessage = '🎊 恭喜连续打卡30天！\n\n奖励：VIP月卡 × 1';
+                rewardType = 'month';
+            } else if (consecutiveDays % 7 === 0 && consecutiveDays > 0) {
+                rewardMessage = `✨ 连续打卡${consecutiveDays}天！\n\n继续保持，30天大奖在等你！`;
+                rewardType = 'milestone';
+            }
+            
+            if (rewardMessage) {
+                // 记录奖励
+                const rewards = JSON.parse(localStorage.getItem('fortune_checkin_rewards') || '[]');
+                if (!rewards.find(r => r.type === rewardType && r.days === consecutiveDays)) {
+                    rewards.push({
+                        type: rewardType,
+                        days: consecutiveDays,
+                        date: new Date().toISOString(),
+                        claimed: false
+                    });
+                    localStorage.setItem('fortune_checkin_rewards', JSON.stringify(rewards));
+                    
+                    setTimeout(() => {
+                        alert(rewardMessage + '\n\n⚠️ 体验版提示：奖励暂存本地，云端同步后正式发放。');
+                    }, 500);
+                }
+            }
+        }
+        
+        // 计算连续打卡天数
+        function calculateConsecutiveDays() {
+            const today = new Date();
+            let consecutive = 0;
+            let checkDate = new Date(today);
+            
+            // 检查今天是否已打卡
+            const todayKey = 'fortune_checkin_' + today.getFullYear() + '_' + today.getMonth();
+            const todayData = JSON.parse(localStorage.getItem(todayKey) || '[]');
+            
+            if (todayData.includes(today.getDate())) {
+                consecutive = 1;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                // 今天未打卡，从昨天开始算
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            // 向前检查连续天数
+            while (true) {
+                const key = 'fortune_checkin_' + checkDate.getFullYear() + '_' + checkDate.getMonth();
+                const data = JSON.parse(localStorage.getItem(key) || '[]');
+                
+                if (data.includes(checkDate.getDate())) {
+                    consecutive++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            
+            return consecutive;
+        }
+        
+        // 显示连续打卡状态
+        function showConsecutiveStatus() {
+            const days = calculateConsecutiveDays();
+            const nextMilestone = days < 7 ? 7 : days < 30 ? 30 : 30;
+            const remaining = nextMilestone - days;
+            
+            return {
+                days: days,
+                nextMilestone: nextMilestone,
+                remaining: remaining,
+                progress: (days / nextMilestone * 100).toFixed(0)
+            };
+        }
+
+        function loadCheckinData() {
+            const now = new Date();
+            const key = 'fortune_checkin_' + now.getFullYear() + '_' + now.getMonth();
+            const checkinData = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            const status = showConsecutiveStatus();
+            const btn = document.getElementById('checkinBtn');
+            
+            if (checkinData.includes(now.getDate())) {
+                btn.textContent = `✓ 已打卡 (${status.days}天)`;
+                btn.classList.add('checked');
+            } else {
+                btn.textContent = `📍 打卡 (${status.days}天)`;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('inputSection').classList.remove('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>

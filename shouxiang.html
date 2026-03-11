@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI手相分析 - 天道元一</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #FFD700;
+            --primary-crimson: #C41E3A;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(20, 20, 30, 0.95);
+            --text-light: #f0f0f0;
+            --text-muted: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary-gold);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 50px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .upload-tips {
+            color: var(--primary-gold);
+            font-size: 0.85rem;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            border: 2px solid var(--primary-gold);
+        }
+
+        .hand-guide {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .guide-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .guide-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .guide-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .guide-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: var(--primary-gold);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hand-type {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(196, 30, 58, 0.1) 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .hand-emoji {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .hand-name {
+            font-size: 1.8rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .hand-desc {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .lines-section {
+            margin-bottom: 30px;
+        }
+
+        .lines-section h3 {
+            color: var(--primary-gold);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .line-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-gold);
+        }
+
+        .line-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .line-content h4 {
+            color: var(--primary-gold);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .line-content p {
+            color: var(--text-light);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .fortune-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .fortune-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .fortune-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .fortune-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-gold);
+        }
+
+        .fortune-label {
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+
+        .advice-section {
+            padding: 25px;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .advice-section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .advice-section p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .paywall {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .paywall h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← 返回首页</a>
+            <h1>✋ AI手相分析</h1>
+            <p class="subtitle">上传手相照片，解读掌纹命理</p>
+        </header>
+
+        <div class="form-card" id="inputForm">
+            <form id="handForm">
+                <div class="form-group">
+                    <label>📸 上传手相照片</label>
+                    <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                        <div class="upload-icon">✋</div>
+                        <div class="upload-text">点击上传手相照片</div>
+                        <div class="upload-hint">请上传清晰的左右手掌照片</div>
+                        <div class="upload-tips">💡 自然光线下，手掌展开，五指分开，掌纹清晰可见</div>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <img id="preview" class="preview-image" alt="手相预览">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 拍照指南</label>
+                    <div class="hand-guide">
+                        <div class="guide-item">
+                            <div class="guide-icon">☀️</div>
+                            <div class="guide-text">光线充足</div>
+                            <div class="guide-desc">自然光最佳</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">✋</div>
+                            <div class="guide-text">手掌展开</div>
+                            <div class="guide-desc">五指自然分开</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">📷</div>
+                            <div class="guide-text">正面拍摄</div>
+                            <div class="guide-desc">垂直于手掌</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">🔍</div>
+                            <div class="guide-text">掌纹清晰</div>
+                            <div class="guide-desc">三条主线可见</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>✋ 选择主用手</label>
+                    <select id="dominantHand" required>
+                        <option value="">请选择</option>
+                        <option value="右手">右手（左撇子选）</option>
+                        <option value="左手">左手（右撇子选）</option>
+                        <option value="双手">双手都拍</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>⚥ 性别</label>
+                    <select id="gender" required>
+                        <option value="">请选择</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">🔮 开始手相分析</button>
+            </form>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2 class="result-title">✋ 手相分析报告</h2>
+            
+            <div class="hand-type">
+                <div class="hand-emoji" id="handEmoji">🖐️</div>
+                <div class="hand-name" id="handName">土型手</div>
+                <p class="hand-desc" id="handDesc">您的手型方正厚实，属于土型手，主稳重踏实，做事有条理...</p>
+            </div>
+
+            <div class="fortune-grid">
+                <div class="fortune-item">
+                    <div class="fortune-icon">💰</div>
+                    <div class="fortune-value" id="wealthLevel">旺</div>
+                    <div class="fortune-label">财运</div>
+                </div>
+                <div class="fortune-item">
+                    <div class="fortune-icon">💼</div>
+                    <div class="fortune-value" id="careerLevel">顺</div>
+                    <div class="fortune-label">事业</div>
+                </div>
+                <div class="fortune-item">
+                    <div class="fortune-icon">💕</div>
+                    <div class="fortune-value" id="loveLevel">佳</div>
+                    <div class="fortune-label">感情</div>
+                </div>
+                <div class="fortune-item">
+                    <div class="fortune-icon">🏥</div>
+                    <div class="fortune-value" id="healthLevel">良</div>
+                    <div class="fortune-label">健康</div>
+                </div>
+                <div class="fortune-item">
+                    <div class="fortune-icon">🎓</div>
+                    <div class="fortune-value" id="wisdomLevel">高</div>
+                    <div class="fortune-label">智慧</div>
+                </div>
+                <div class="fortune-item">
+                    <div class="fortune-icon">🍀</div>
+                    <div class="fortune-value" id="luckLevel">福</div>
+                    <div class="fortune-label">福气</div>
+                </div>
+            </div>
+
+            <div class="lines-section">
+                <h3>📿 掌纹解析</h3>
+                
+                <div class="line-item">
+                    <div class="line-icon">💝</div>
+                    <div class="line-content">
+                        <h4>感情线（天纹）</h4>
+                        <p id="loveLine">您的感情线深长清晰，主感情丰富，重视感情...</p>
+                    </div>
+                </div>
+
+                <div class="line-item">
+                    <div class="line-icon">💼</div>
+                    <div class="line-content">
+                        <h4>智慧线（人纹）</h4>
+                        <p id="wisdomLine">您的智慧线平直有力，主聪明理性，思维清晰...</p>
+                    </div>
+                </div>
+
+                <div class="line-item">
+                    <div class="line-icon">💰</div>
+                    <div class="line-content">
+                        <h4>生命线（地纹）</h4>
+                        <p id="lifeLine">您的生命线深长圆润，主身体健康，精力充沛...</p>
+                    </div>
+                </div>
+
+                <div class="line-item">
+                    <div class="line-icon">🌟</div>
+                    <div class="line-content">
+                        <h4>事业线（玉柱纹）</h4>
+                        <p id="careerLine">您的事业线清晰直上，主事业有成，贵人相助...</p>
+                    </div>
+                </div>
+
+                <div class="line-item">
+                    <div class="line-icon">💎</div>
+                    <div class="line-content">
+                        <h4>财运线（钱财纹）</h4>
+                        <p id="moneyLine">您的财运线多而清晰，主财运亨通，善于理财...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="advice-section">
+                <h3>💡 开运建议</h3>
+                <p id="handAdvice">根据您的手相特征，为您提供以下开运建议...</p>
+            </div>
+
+            <div class="paywall" id="paywall">
+                <span class="vip-badge">VIP专属</span>
+                <h3>🔮 查看完整手相报告</h3>
+                <p>升级VIP解锁详细流年运势、改运方法、贵人方位</p>
+                <button class="submit-btn" onclick="showPayment()" style="margin-top: 20px;">升级VIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 手相分析数据库
+        const handData = {
+            handTypes: [
+                { 
+                    emoji: '🖐️', 
+                    name: '土型手', 
+                    desc: '您的手型方正厚实，掌肉丰满，属于土型手。土型手主人稳重踏实，做事有条理，为人诚信可靠。财运稳定，适合从事房地产、建筑、农业等行业。',
+                    wealth: '旺', career: '顺', love: '稳', health: '良', wisdom: '实', luck: '厚'
+                },
+                { 
+                    emoji: '✋', 
+                    name: '木型手', 
+                    desc: '您的手指修长，掌型偏长，属于木型手。木型手主人聪明好学，有艺术天赋，善于思考。适合从事教育、文化、艺术、设计等工作。',
+                    wealth: '中', career: '升', love: '雅', health: '柔', wisdom: '高', luck: '清'
+                },
+                { 
+                    emoji: '🤚', 
+                    name: '水型手', 
+                    desc: '您的手掌柔软，指节圆润，属于水型手。水型手主人聪明灵活，善于交际，适应力强。适合从事商业、贸易、服务、外交等行业。',
+                    wealth: '流', career: '变', love: '多', health: '润', wisdom: '敏', luck: '通'
+                },
+                { 
+                    emoji: '🖖', 
+                    name: '火型手', 
+                    desc: '您的手掌偏红，指尖较尖，属于火型手。火型手主人热情开朗，行动力强，有领导才能。适合从事管理、销售、演艺、创业等工作。',
+                    wealth: '热', career: '旺', love: '烈', health: '强', wisdom: '锐', luck: '显'
+                },
+                { 
+                    emoji: '👋', 
+                    name: '金型手', 
+                    desc: '您的手掌方正，指节分明，属于金型手。金型手主人刚毅果断，有正义感，执行力强。适合从事法律、军警、金融、技术等行业。',
+                    wealth: '聚', career: '成', love: '专', health: '刚', wisdom: '断', luck: '正'
+                }
+            ],
+            loveLines: [
+                '您的感情线深长清晰，无杂纹干扰，主感情专一，婚姻美满。对待感情认真负责，能够找到真心相爱的伴侣。',
+                '您的感情线较长，延伸至食指下方，主感情丰富，重视精神交流。适合寻找志同道合的伴侣，婚后生活和谐。',
+                '您的感情线有分叉，主感情经历丰富，可能有多段恋情。但最终会找到真爱，婚后需要多沟通理解。',
+                '您的感情线较短，主感情较为理性，不轻易动情。一旦认定对方，会非常专一，适合晚婚。',
+                '您的感情线有岛纹，主感情路上有波折，可能经历失恋或分手。但经历后会更成熟，最终收获幸福。',
+                '您的感情线向上弯曲，主桃花运旺，异性缘佳。但需注意分辨真假感情，避免陷入三角关系。',
+                '您的感情线向下弯曲，主感情较为被动，需要主动争取。适合通过朋友介绍或相亲认识对象。',
+                '您的感情线有链状纹，主感情敏感细腻，容易受伤。需要找一个体贴包容的伴侣，感情才能长久。'
+            ],
+            wisdomLines: [
+                '您的智慧线平直有力，延伸至无名指下方，主聪明理性，思维清晰。适合从事需要逻辑分析的工作，如科研、技术、金融等。',
+                '您的智慧线较长，延伸至手掌边缘，主智慧过人，学识渊博。有研究精神，适合从事学术、教育、咨询等工作。',
+                '您的智慧线有分叉，主多才多艺，兴趣广泛。适合从事创意、艺术、设计等需要灵感的工作。',
+                '您的智慧线较短，主直觉敏锐，行动力强。适合从事销售、市场、创业等需要快速决策的工作。',
+                '您的智慧线向下弯曲，主想象力丰富，有艺术天赋。适合从事文学、艺术、设计等创意工作。',
+                '您的智慧线向上弯曲，主务实理性，注重实际。适合从事管理、行政、财务等需要条理的工作。',
+                '您的智慧线有岛纹，主思维容易混乱，需要注意集中精力。适合从事简单重复的工作，避免复杂决策。',
+                '您的智慧线断裂，主思维方式可能发生过重大转变。可能经历过人生转折，思维更加成熟稳重。'
+            ],
+            lifeLines: [
+                '您的生命线深长圆润，无断裂，主身体健康，精力充沛。寿命较长，晚年生活质量高，少病少灾。',
+                '您的生命线较长，延伸至手腕处，主体质强健，抵抗力好。适合从事体力劳动或运动相关工作。',
+                '您的生命线有分叉，主晚年可能移居外地或生活发生变化。需要注意晚年健康，提前做好准备。',
+                '您的生命线较短，主体质偏弱，需要注意保养。建议加强锻炼，注意饮食，定期体检。',
+                '您的生命线有链状纹，主健康状况起伏不定，容易疲劳。需要注意劳逸结合，避免过度劳累。',
+                '您的生命线有岛纹，主某段时间健康可能出现问题。需要特别注意对应年龄段的健康状况。',
+                '您的生命线内侧有贵人线，主遇到困难时会有贵人相助，逢凶化吉。关键时刻有人帮助渡过难关。',
+                '您的生命线外侧有旅行线，主喜欢旅行，经常外出。适合从事需要出差或旅行的工作。'
+            ],
+            careerLines: [
+                '您的事业线清晰直上，从手腕延伸至中指，主事业有成，步步高升。中年后事业达到巅峰，名利双收。',
+                '您的事业线从生命线发出，主事业靠自己打拼，白手起家。虽然起步艰难，但后期发展势头强劲。',
+                '您的事业线从智慧线发出，主事业靠智慧和专业能力发展。适合从事技术、专业、咨询等工作。',
+                '您的事业线有分叉，主事业可能有多个发展方向。适合多元化发展，或同时从事多项工作。',
+                '您的事业线有中断，主事业可能经历变动或转型。需要灵活应对，把握新的发展机会。',
+                '您的事业线较浅，主事业较为平稳，没有大起大落。适合追求稳定，不适合冒险创业。',
+                '您的事业线有多条，主多才多艺，可能从事多种职业。适合自由职业或兼职发展。',
+                '您的事业线从感情线发出，主事业与感情相关，或靠人际关系发展。适合从事服务、销售、公关等工作。'
+            ],
+            moneyLines: [
+                '您的财运线多而清晰，主财运亨通，善于理财。正财偏财皆旺，有积蓄，晚年不愁钱财。',
+                '您的财运线从生命线发出，主财运靠自己努力获得。需要脚踏实地，积少成多，财富稳定增长。',
+                '您的财运线从智慧线发出，主靠智慧和专业能力赚钱。适合从事技术、咨询、教育等高收入工作。',
+                '您的财运线有分叉，主有多种收入来源。适合多元化投资，或同时从事多项赚钱活动。',
+                '您的财运线向上弯曲，主财运上升，收入逐年增加。中年后财运更佳，可以大胆投资。',
+                '您的财运线向下弯曲，主需要注意理财，避免不必要的开支。建议制定预算，控制消费。',
+                '您的财运线有岛纹，主财运有波动，可能经历破财。需要谨慎投资，避免高风险项目。',
+                '您的财运线与事业线相连，主事业带动财运，名利双收。事业发展顺利，财运自然亨通。'
+            ],
+            advices: [
+                '根据您的手相，建议佩戴金饰或玉饰增强运势。多穿黄色、棕色系衣服，有助于提升财运和事业运。',
+                '您的幸运方位是西南方，办公桌或床头朝向西南，有助于事业发展和健康运势。',
+                '建议经常按摩手掌，促进血液循环，也能激活掌纹能量。特别是生命线区域，有助于增强健康运。',
+                '您的幸运数字是5和10，重要日子或投资可选择带有这些数字的日期或金额。',
+                '建议保持乐观积极的心态，手掌也会反映心情状态。心情好时，掌纹会更加清晰明亮。',
+                '根据您的手相，适合从事与土相关的行业，如房地产、建筑、农业等，事业发展会更加顺利。',
+                '建议定期观察掌纹变化，掌纹会随着运势变化而改变。发现变化时，可及时调整策略。',
+                '您的手相显示贵人运佳，建议多结交良师益友。关键时刻会有贵人相助，事业更上一层楼。'
+            ]
+        };
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('handForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const dominantHand = document.getElementById('dominantHand').value;
+            const gender = document.getElementById('gender').value;
+            
+            // 生成随机种子
+            const seed = dominantHand + gender + Math.floor(Math.random() * 1000);
+            const randomIndex = (seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 8;
+            const handTypeIndex = randomIndex % 5;
+            
+            // 获取手型数据
+            const handType = handData.handTypes[handTypeIndex];
+            
+            // 更新手型信息
+            document.getElementById('handEmoji').textContent = handType.emoji;
+            document.getElementById('handName').textContent = handType.name;
+            document.getElementById('handDesc').textContent = handType.desc;
+            
+            // 更新运势等级
+            document.getElementById('wealthLevel').textContent = handType.wealth;
+            document.getElementById('careerLevel').textContent = handType.career;
+            document.getElementById('loveLevel').textContent = handType.love;
+            document.getElementById('healthLevel').textContent = handType.health;
+            document.getElementById('wisdomLevel').textContent = handType.wisdom;
+            document.getElementById('luckLevel').textContent = handType.luck;
+            
+            // 更新掌纹解析
+            document.getElementById('loveLine').textContent = handData.loveLines[randomIndex];
+            document.getElementById('wisdomLine').textContent = handData.wisdomLines[(randomIndex + 1) % 8];
+            document.getElementById('lifeLine').textContent = handData.lifeLines[(randomIndex + 2) % 8];
+            document.getElementById('careerLine').textContent = handData.careerLines[(randomIndex + 3) % 8];
+            document.getElementById('moneyLine').textContent = handData.moneyLines[(randomIndex + 4) % 8];
+            
+            // 更新开运建议
+            document.getElementById('handAdvice').textContent = handData.advices[randomIndex];
+            
+            // 显示结果
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('resultSection').classList.add('active');
+        });
+
+        function showPayment() {
+            alert('感谢您的支持！\n\n请联系客服完成支付：\n电话：180-5812-5388\n微信：80506070');
+        }
+    </script>
+</body>
+</html>

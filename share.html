@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>分享领福利 - 天道元一</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 30%, #0a0a0f 100%);
+            min-height: 100vh;
+            color: #f0f0f0;
+            overflow-x: hidden;
+        }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
+        
+        /* 星空背景 */
+        .stars-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,215,0,0.8), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,215,0,0.6), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,215,0,0.4), transparent),
+                radial-gradient(2px 2px at 130px 80px, rgba(255,215,0,0.5), transparent),
+                radial-gradient(1px 1px at 160px 120px, rgba(255,215,0,0.3), transparent),
+                radial-gradient(2px 2px at 200px 50px, rgba(255,215,0,0.6), transparent),
+                radial-gradient(1px 1px at 250px 150px, rgba(255,215,0,0.4), transparent),
+                radial-gradient(2px 2px at 300px 90px, rgba(255,215,0,0.5), transparent);
+            animation: twinkle 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* 头部 */
+        .header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+        .header-icon { font-size: 60px; margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .header h1 { 
+            font-size: 28px; 
+            background: linear-gradient(135deg, #FFD700, #FFA500, #FF69B4); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .header p { color: #888; font-size: 14px; }
+        
+        /* 实时播报 */
+        .live-banner {
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,105,180,0.1));
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 30px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .live-text {
+            flex: 1;
+            font-size: 13px;
+            color: #FFD700;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        /* 荣耀之路 - 登山进度 */
+        .glory-road {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 25px;
+            padding: 30px 25px;
+            margin-bottom: 25px;
+        }
+        .road-title {
+            text-align: center;
+            font-size: 20px;
+            color: #FFD700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* 进度山峰 */
+        .mountain-path {
+            position: relative;
+            height: 200px;
+            margin: 20px 0;
+        }
+        .mountain-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .path-line {
+            fill: none;
+            stroke: rgba(255, 215, 0, 0.2);
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+        .path-progress {
+            fill: none;
+            stroke: url(#goldGradient);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 500;
+            stroke-dashoffset: 500;
+            transition: stroke-dashoffset 1s ease;
+        }
+        .milestone {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .milestone:hover { transform: scale(1.2); }
+        .milestone.reached .milestone-circle {
+            fill: #FFD700;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+        }
+        .milestone-circle {
+            fill: rgba(255, 255, 255, 0.1);
+            stroke: rgba(255, 215, 0, 0.5);
+            stroke-width: 2;
+        }
+        .milestone-icon {
+            font-size: 16px;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .milestone-label {
+            font-size: 11px;
+            fill: #888;
+            text-anchor: middle;
+        }
+        .current-position {
+            animation: bounce 1s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* 进度统计 */
+        .progress-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 32px; color: #FFD700; font-weight: bold; }
+        .stat-label { font-size: 12px; color: #888; margin-top: 5px; }
+        
+        /* 奖励阶梯 */
+        .rewards-section {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reward-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+        .reward-card:hover { border-color: rgba(255, 215, 0, 0.4); }
+        .reward-card.locked { opacity: 0.5; }
+        .reward-card.unlocked { 
+            border-color: #FFD700; 
+            background: rgba(255, 215, 0, 0.05);
+        }
+        .reward-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        .reward-icon.locked {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .reward-info { flex: 1; }
+        .reward-name { font-size: 16px; color: #f0f0f0; margin-bottom: 5px; }
+        .reward-desc { font-size: 13px; color: #888; }
+        .reward-require {
+            font-size: 12px;
+            color: #FFD700;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .reward-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 20px;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .reward-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        /* 排行榜 */
+        .leaderboard {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .leaderboard-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .leaderboard-tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #888;
+            transition: all 0.3s;
+        }
+        .leaderboard-tab.active {
+            border-color: #FFD700;
+            color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        .leaderboard-list { max-height: 300px; overflow-y: auto; }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .rank-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-right: 15px;
+        }
+        .rank-number.top3 {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+        .rank-number.normal {
+            background: rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+        .rank-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9B59B6, #E74C3C);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        .rank-info { flex: 1; }
+        .rank-name { font-size: 15px; color: #f0f0f0; margin-bottom: 3px; }
+        .rank-invites { font-size: 12px; color: #888; }
+        .rank-reward {
+            padding: 5px 12px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            font-size: 12px;
+            color: #FFD700;
+        }
+        
+        /* 邀请方式 */
+        .invite-section {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .invite-code-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invite-code-label { font-size: 13px; color: #888; margin-bottom: 10px; }
+        .invite-code {
+            font-size: 28px;
+            color: #FFD700;
+            font-weight: bold;
+            letter-spacing: 5px;
+            font-family: monospace;
+        }
+        .invite-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .invite-btn {
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .invite-btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: bold;
+        }
+        .invite-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f0f0f0;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        .invite-btn-icon { font-size: 24px; }
+        
+        /* 海报预览弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .poster-preview {
+            background: linear-gradient(135deg, #1a0a2e, #2a1a3e);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+            position: relative;
+        }
+        .poster-stars {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 30px 40px, #FFD700, transparent),
+                radial-gradient(1px 1px at 80px 80px, #FFD700, transparent),
+                radial-gradient(2px 2px at 150px 60px, #FFD700, transparent);
+            opacity: 0.5;
+            border-radius: 20px;
+        }
+        .poster-content { position: relative; z-index: 1; }
+        .poster-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        .poster-title { font-size: 22px; color: #FFD700; margin-bottom: 15px; }
+        .poster-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .poster-stat { text-align: center; }
+        .poster-stat-value { font-size: 28px; color: #FFD700; font-weight: bold; }
+        .poster-stat-label { font-size: 12px; color: #888; }
+        .poster-qrcode {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #333;
+        }
+        .poster-tip { font-size: 13px; color: #888; margin-bottom: 20px; }
+        .poster-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .poster-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .poster-btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            font-weight: bold;
+        }
+        .poster-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f0f0f0;
+        }
+        
+        /* 规则说明 */
+        .rules-section {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 25px;
+            padding: 25px;
+        }
+        .rule-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-number {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFD700;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .rule-content { flex: 1; }
+        .rule-title { font-size: 15px; color: #f0f0f0; margin-bottom: 5px; }
+        .rule-desc { font-size: 13px; color: #888; line-height: 1.6; }
+        
+        .hidden { display: none !important; }
+        
+        /* 体验版提示横幅 */
+        .beta-banner {
+            position: relative;
+            z-index: 100;
+            background: linear-gradient(90deg, rgba(255,215,0,0.2), rgba(255,105,180,0.2));
+            border: 1px solid rgba(255,215,0,0.3);
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #FFD700;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .beta-banner span:first-child { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="stars-bg"></div>
+    
+    <!-- 本地体验版提示 -->
+    <div class="beta-banner">
+        <span>🚀</span>
+        <span>功能尝鲜提示：本活动目前为体验版本，您的邀请与奖励数据暂存于本地浏览器。我们将在近期升级至云端服务器，为您永久保存数据。</span>
+    </div>
+    
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-icon">🏔️</div>
+            <h1>荣耀之路</h1>
+            <p>邀请好友，共攀高峰</p>
+        </div>
+        
+        <!-- 实时播报 -->
+        <div class="live-banner">
+            <div class="live-dot"></div>
+            <div class="live-text" id="liveText">🎉 用户138****5678 刚刚邀请了好友，获得3天VIP！</div>
+        </div>
+        
+        <!-- 荣耀之路进度 -->
+        <div class="glory-road">
+            <div class="road-title">
+                <span>🎯</span>
+                <span>我的攀登进度</span>
+            </div>
+            
+            <div class="mountain-path">
+                <svg class="mountain-svg" viewBox="0 0 400 200">
+                    <defs>
+                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FFD700"/>
+                            <stop offset="100%" style="stop-color:#FFA500"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- 背景路径 -->
+                    <path class="path-line" d="M 50 180 Q 100 150, 150 120 T 250 80 T 350 30"/>
+                    <!-- 进度路径 -->
+                    <path class="path-progress" id="progressPath" d="M 50 180 Q 100 150, 150 120 T 250 80 T 350 30"/>
+                    
+                    <!-- 里程碑 -->
+                    <g class="milestone" data-level="1" onclick="showRewardDetail(1)">
+                        <circle class="milestone-circle" cx="50" cy="180" r="20"/>
+                        <text class="milestone-icon" x="50" y="180">🥉</text>
+                        <text class="milestone-label" x="50" y="210">1人</text>
+                    </g>
+                    <g class="milestone" data-level="2" onclick="showRewardDetail(2)">
+                        <circle class="milestone-circle" cx="150" cy="120" r="20"/>
+                        <text class="milestone-icon" x="150" y="120">🥈</text>
+                        <text class="milestone-label" x="150" y="150">3人</text>
+                    </g>
+                    <g class="milestone" data-level="3" onclick="showRewardDetail(3)">
+                        <circle class="milestone-circle" cx="250" cy="80" r="20"/>
+                        <text class="milestone-icon" x="250" y="80">🥇</text>
+                        <text class="milestone-label" x="250" y="110">5人</text>
+                    </g>
+                    <g class="milestone" data-level="4" onclick="showRewardDetail(4)">
+                        <circle class="milestone-circle" cx="350" cy="30" r="25"/>
+                        <text class="milestone-icon" x="350" y="30">👑</text>
+                        <text class="milestone-label" x="350" y="60">10人</text>
+                    </g>
+                    
+                    <!-- 当前位置 -->
+                    <g class="current-position" id="currentPosition">
+                        <circle cx="80" cy="165" r="15" fill="#FFD700" filter="drop-shadow(0 0 10px rgba(255,215,0,0.8))"/>
+                        <text x="80" y="165" text-anchor="middle" dominant-baseline="central" font-size="16">🧗</text>
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="progress-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="inviteCount">2</div>
+                    <div class="stat-label">已邀请</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="nextTarget">3</div>
+                    <div class="stat-label">距下一级</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalReward">1</div>
+                    <div class="stat-label">已获得奖励</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 奖励阶梯 -->
+        <div class="rewards-section">
+            <div class="section-title">
+                <span>🎁</span>
+                <span>攀登奖励</span>
+            </div>
+            
+            <div class="reward-card unlocked" id="reward1">
+                <div class="reward-icon">🥉</div>
+                <div class="reward-info">
+                    <div class="reward-name">初出茅庐</div>
+                    <div class="reward-desc">3天VIP会员 + 1次免费解读</div>
+                    <div class="reward-require">
+                        <span>✓</span>
+                        <span>已达成（邀请1人）</span>
+                    </div>
+                </div>
+                <button class="reward-btn" onclick="claimReward(1)">领取</button>
+            </div>
+            
+            <div class="reward-card" id="reward2">
+                <div class="reward-icon locked">🥈</div>
+                <div class="reward-info">
+                    <div class="reward-name">崭露头角</div>
+                    <div class="reward-desc">7天VIP会员 + 3次免费解读</div>
+                    <div class="reward-require">
+                        <span>🔒</span>
+                        <span>需邀请3人</span>
+                    </div>
+                </div>
+                <button class="reward-btn" disabled>未解锁</button>
+            </div>
+            
+            <div class="reward-card" id="reward3">
+                <div class="reward-icon locked">🥇</div>
+                <div class="reward-info">
+                    <div class="reward-name">声名鹊起</div>
+                    <div class="reward-desc">15天VIP会员 + 5次免费解读</div>
+                    <div class="reward-require">
+                        <span>🔒</span>
+                        <span>需邀请5人</span>
+                    </div>
+                </div>
+                <button class="reward-btn" disabled>未解锁</button>
+            </div>
+            
+            <div class="reward-card" id="reward4">
+                <div class="reward-icon locked">👑</div>
+                <div class="reward-info">
+                    <div class="reward-name">登峰造极</div>
+                    <div class="reward-desc">30天VIP会员 + 终身9折 + 专属客服</div>
+                    <div class="reward-require">
+                        <span>🔒</span>
+                        <span>需邀请10人</span>
+                    </div>
+                </div>
+                <button class="reward-btn" disabled>未解锁</button>
+            </div>
+        </div>
+        
+        <!-- 排行榜 -->
+        <div class="leaderboard">
+            <div class="section-title">
+                <span>🏆</span>
+                <span>邀请排行榜</span>
+            </div>
+            
+            <div class="leaderboard-tabs">
+                <div class="leaderboard-tab active" onclick="switchLeaderboard('week')">本周</div>
+                <div class="leaderboard-tab" onclick="switchLeaderboard('month')">本月</div>
+                <div class="leaderboard-tab" onclick="switchLeaderboard('all')">总榜</div>
+            </div>
+            
+            <div class="leaderboard-list" id="leaderboardList">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 邀请方式 -->
+        <div class="invite-section">
+            <div class="section-title">
+                <span>📤</span>
+                <span>立即邀请</span>
+            </div>
+            
+            <div class="invite-code-box">
+                <div class="invite-code-label">我的专属邀请码</div>
+                <div class="invite-code" id="inviteCode">TONG888</div>
+            </div>
+            
+            <div class="invite-actions">
+                <button class="invite-btn invite-btn-primary" onclick="generatePoster()">
+                    <span class="invite-btn-icon">🖼️</span>
+                    <span>生成海报</span>
+                </button>
+                <button class="invite-btn invite-btn-secondary" onclick="copyLink()">
+                    <span class="invite-btn-icon">📋</span>
+                    <span>复制链接</span>
+                </button>
+                <button class="invite-btn invite-btn-secondary" onclick="shareWechat()">
+                    <span class="invite-btn-icon">💬</span>
+                    <span>微信好友</span>
+                </button>
+                <button class="invite-btn invite-btn-secondary" onclick="shareMoment()">
+                    <span class="invite-btn-icon">📱</span>
+                    <span>朋友圈</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 规则说明 -->
+        <div class="rules-section">
+            <div class="section-title">
+                <span>📋</span>
+                <span>活动规则</span>
+            </div>
+            
+            <div class="rule-item">
+                <div class="rule-number">1</div>
+                <div class="rule-content">
+                    <div class="rule-title">如何获得奖励</div>
+                    <div class="rule-desc">分享您的专属邀请码或海报给好友，好友通过您的邀请注册并首次使用，即算有效邀请。</div>
+                </div>
+            </div>
+            
+            <div class="rule-item">
+                <div class="rule-number">2</div>
+                <div class="rule-content">
+                    <div class="rule-title">奖励发放</div>
+                    <div class="rule-desc">达成对应阶梯后，奖励自动发放至账户，VIP时长即时生效，解读券可在任意模块使用。</div>
+                </div>
+            </div>
+            
+            <div class="rule-item">
+                <div class="rule-number">3</div>
+                <div class="rule-content">
+                    <div class="rule-title">防刷说明</div>
+                    <div class="rule-desc">系统会检测异常邀请行为，包括但不限于：同一设备多账号、虚拟号码注册等，违规将取消奖励资格。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 海报预览弹窗 -->
+    <div class="modal-overlay hidden" id="posterModal">
+        <div class="poster-preview">
+            <div class="poster-stars"></div>
+            <div class="poster-content">
+                <div class="poster-avatar">🧗</div>
+                <div class="poster-title">我正在攀登荣耀之路</div>
+                <div class="poster-stats">
+                    <div class="poster-stat">
+                        <div class="poster-stat-value" id="posterInviteCount">2</div>
+                        <div class="poster-stat-label">已邀请</div>
+                    </div>
+                    <div class="poster-stat">
+                        <div class="poster-stat-value" id="posterRewardCount">1</div>
+                        <div class="poster-stat-label">获得奖励</div>
+                    </div>
+                </div>
+                <div class="poster-qrcode">
+                    [二维码占位]<br>
+                    邀请码：TONG888
+                </div>
+                <div class="poster-tip">扫码加入，一起探索命运</div>
+                <div class="poster-actions">
+                    <button class="poster-btn poster-btn-primary" onclick="savePoster()">保存图片</button>
+                    <button class="poster-btn poster-btn-secondary" onclick="closePoster()">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 用户数据（本地存储模拟）
+        let userData = {
+            userId: null,
+            inviteCode: '',
+            inviteCount: 0,
+            claimedRewards: [],
+            currentLevel: 0,
+            invitees: [], // 存储邀请的用户列表
+            totalRewards: { vipDays: 0, readingCoupons: 0 }
+        };
+        
+        // 奖励配置
+        const rewards = [
+            { level: 1, name: '初出茅庐', icon: '🥉', requires: 1, vipDays: 3, coupons: 1 },
+            { level: 2, name: '崭露头角', icon: '🥈', requires: 3, vipDays: 7, coupons: 3 },
+            { level: 3, name: '声名鹊起', icon: '🥇', requires: 5, vipDays: 15, coupons: 5 },
+            { level: 4, name: '登峰造极', icon: '👑', requires: 10, vipDays: 30, coupons: 10, discount: '9折' }
+        ];
+        
+        // 模拟用户数据库（其他用户的邀请数据）
+        const mockUsers = [
+            { name: '张**', avatar: '👨', invites: 28, reward: '30天VIP' },
+            { name: '李**', avatar: '👩', invites: 24, reward: '15天VIP' },
+            { name: '王**', avatar: '👨', invites: 19, reward: '15天VIP' },
+            { name: '赵**', avatar: '👩', invites: 15, reward: '7天VIP' },
+            { name: '陈**', avatar: '👨', invites: 12, reward: '7天VIP' },
+            { name: '刘**', avatar: '👩', invites: 10, reward: '7天VIP' },
+            { name: '周**', avatar: '👨', invites: 8, reward: '3天VIP' },
+            { name: '吴**', avatar: '👩', invites: 6, reward: '3天VIP' },
+            { name: '郑**', avatar: '👨', invites: 5, reward: '3天VIP' },
+            { name: '孙**', avatar: '👩', invites: 4, reward: '3天VIP' }
+        ];
+        
+        // 实时播报内容
+        const liveMessages = [
+            '🎉 用户138****5678 刚刚邀请了好友，获得3天VIP！',
+            '🎊 用户156****1234 达成"崭露头角"，获得7天VIP！',
+            '⭐ 用户139****9999 连续邀请3人，奖励已到账！',
+            '🏆 用户177****8888 登顶排行榜第一！',
+            '💎 新用户通过邀请加入，双方获得奖励！',
+            '🔥 用户150****2468 邀请好友突破10人！',
+            '✨ 用户136****1357 刚刚领取了登峰造极奖励！'
+        ];
+        
+        // 初始化
+        function init() {
+            // 生成或获取用户ID
+            let userId = localStorage.getItem('fortune_user_id');
+            if (!userId) {
+                userId = 'USER' + Date.now().toString(36).toUpperCase();
+                localStorage.setItem('fortune_user_id', userId);
+            }
+            
+            // 加载用户数据
+            const saved = localStorage.getItem('fortune_share_data_' + userId);
+            if (saved) {
+                userData = JSON.parse(saved);
+            } else {
+                // 新用户，生成邀请码
+                userData.userId = userId;
+                userData.inviteCode = generateInviteCode();
+                saveUserData();
+            }
+            
+            // 检查URL参数（被邀请）
+            checkInviteParams();
+            
+            // 模拟一些邀请数据（演示用）
+            if (userData.inviteCount === 0 && !localStorage.getItem('fortune_demo_shown')) {
+                simulateDemoData();
+            }
+            
+            updateUI();
+            renderLeaderboard('week');
+            startLiveBroadcast();
+            
+            // 检查是否有未领取的奖励
+            checkUnclaimedRewards();
+        }
+        
+        // 生成唯一邀请码（8位）
+        function generateInviteCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+        
+        // 检查URL邀请参数
+        function checkInviteParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const inviteCode = urlParams.get('invite');
+            const inviterId = urlParams.get('inviter');
+            
+            if (inviteCode && inviterId) {
+                // 检查是否是自己
+                if (inviteCode === userData.inviteCode) {
+                    showToast('不能邀请自己哦~');
+                    return;
+                }
+                
+                // 检查是否已被邀请过
+                const alreadyInvited = localStorage.getItem('fortune_already_invited');
+                if (alreadyInvited) {
+                    return; // 已处理过，静默返回
+                }
+                
+                // 保存待处理的邀请关系
+                localStorage.setItem('fortune_pending_inviter', inviterId);
+                localStorage.setItem('fortune_pending_invite_code', inviteCode);
+                localStorage.setItem('fortune_already_invited', 'true');
+                
+                // 显示欢迎提示
+                setTimeout(() => {
+                    showToast('🎉 欢迎通过好友邀请加入！\n完成一次运势测算即可为好友增加邀请进度~');
+                }, 1000);
+            }
+        }
+        
+        // 模拟演示数据（首次访问）
+        function simulateDemoData() {
+            userData.inviteCount = 2;
+            userData.invitees = [
+                { name: '好友A', date: new Date().toISOString(), avatar: '👤' },
+                { name: '好友B', date: new Date(Date.now() - 86400000).toISOString(), avatar: '👤' }
+            ];
+            userData.claimedRewards = [];
+            localStorage.setItem('fortune_demo_shown', 'true');
+            saveUserData();
+        }
+        
+        // 保存用户数据
+        function saveUserData() {
+            localStorage.setItem('fortune_share_data_' + userData.userId, JSON.stringify(userData));
+        }
+        
+        // 模拟邀请成功（演示按钮）
+        function simulateInvite() {
+            const names = ['小明', '小红', '小刚', '小丽', '小军', '小芳', '小强', '小敏'];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            
+            userData.inviteCount++;
+            userData.invitees.push({
+                name: randomName,
+                date: new Date().toISOString(),
+                avatar: '👤'
+            });
+            
+            saveUserData();
+            updateUI();
+            
+            // 检查是否解锁新奖励
+            checkNewUnlock();
+            
+            alert(`🎉 成功邀请好友【${randomName}】！\n\n当前邀请进度：${userData.inviteCount}人`);
+        }
+        
+        // 检查新解锁
+        function checkNewUnlock() {
+            for (let r of rewards) {
+                if (userData.inviteCount === r.requires && !userData.claimedRewards.includes(r.level)) {
+                    setTimeout(() => {
+                        alert(`🎊 恭喜！您已达成【${r.name}】！\n\n奖励内容：${r.vipDays}天VIP + ${r.coupons}次免费解读\n\n请点击领取按钮领取奖励！`);
+                    }, 500);
+                    break;
+                }
+            }
+        }
+        
+        // 检查未领取奖励
+        function checkUnclaimedRewards() {
+            const unclaimed = rewards.filter(r => 
+                userData.inviteCount >= r.requires && !userData.claimedRewards.includes(r.level)
+            );
+            
+            if (unclaimed.length > 0) {
+                setTimeout(() => {
+                    const r = unclaimed[0];
+                    alert(`💎 您有未领取的奖励！\n\n【${r.name}】${r.vipDays}天VIP + ${r.coupons}次解读\n\n快去领取吧！`);
+                }, 2000);
+            }
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            const progress = Math.min(userData.inviteCount / 10, 1);
+            const offset = 500 - (progress * 500);
+            document.getElementById('progressPath').style.strokeDashoffset = offset;
+            
+            // 更新里程碑状态
+            document.querySelectorAll('.milestone').forEach(el => {
+                const level = parseInt(el.dataset.level);
+                if (userData.inviteCount >= rewards[level-1].requires) {
+                    el.classList.add('reached');
+                }
+            });
+            
+            // 更新当前位置
+            const positions = [
+                { x: 50, y: 180 },
+                { x: 100, y: 155 },
+                { x: 150, y: 120 },
+                { x: 200, y: 100 },
+                { x: 250, y: 80 },
+                { x: 300, y: 55 },
+                { x: 350, y: 30 }
+            ];
+            const posIndex = Math.min(userData.inviteCount, 6);
+            const pos = positions[posIndex];
+            const currentPos = document.getElementById('currentPosition');
+            currentPos.querySelector('circle').setAttribute('cx', pos.x);
+            currentPos.querySelector('circle').setAttribute('cy', pos.y);
+            currentPos.querySelector('text').setAttribute('x', pos.x);
+            currentPos.querySelector('text').setAttribute('y', pos.y);
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('inviteCount').textContent = userData.inviteCount;
+            document.getElementById('inviteCode').textContent = userData.inviteCode;
+            
+            // 计算下一级
+            let nextTarget = 10;
+            let currentLevel = 0;
+            for (let r of rewards) {
+                if (userData.inviteCount >= r.requires) {
+                    currentLevel = r.level;
+                }
+                if (userData.inviteCount < r.requires) {
+                    nextTarget = r.requires - userData.inviteCount;
+                    break;
+                }
+            }
+            userData.currentLevel = currentLevel;
+            document.getElementById('nextTarget').textContent = nextTarget;
+            document.getElementById('totalReward').textContent = userData.claimedRewards.length;
+            
+            // 更新奖励卡片状态
+            rewards.forEach((r) => {
+                const card = document.getElementById('reward' + r.level);
+                const isUnlocked = userData.inviteCount >= r.requires;
+                const isClaimed = userData.claimedRewards.includes(r.level);
+                
+                card.classList.toggle('unlocked', isUnlocked && !isClaimed);
+                card.classList.toggle('locked', !isUnlocked);
+                
+                // 更新图标状态
+                const iconEl = card.querySelector('.reward-icon');
+                iconEl.classList.toggle('locked', !isUnlocked);
+                
+                // 更新需求文本
+                const requireEl = card.querySelector('.reward-require');
+                if (isClaimed) {
+                    requireEl.innerHTML = '<span>✓</span><span>已领取</span>';
+                } else if (isUnlocked) {
+                    requireEl.innerHTML = '<span>✓</span><span>已达成（邀请' + r.requires + '人）</span>';
+                } else {
+                    requireEl.innerHTML = '<span>🔒</span><span>需邀请' + r.requires + '人（还差' + (r.requires - userData.inviteCount) + '人）</span>';
+                }
+                
+                const btn = card.querySelector('.reward-btn');
+                if (isClaimed) {
+                    btn.textContent = '已领取';
+                    btn.disabled = true;
+                } else if (isUnlocked) {
+                    btn.textContent = '领取';
+                    btn.disabled = false;
+                } else {
+                    btn.textContent = '未解锁';
+                    btn.disabled = true;
+                }
+            });
+            
+            updateProgress();
+            updatePosterData();
+        }
+        
+        // 更新海报数据
+        function updatePosterData() {
+            document.getElementById('posterInviteCount').textContent = userData.inviteCount;
+            document.getElementById('posterRewardCount').textContent = userData.claimedRewards.length;
+        }
+        
+        // 领取奖励
+        function claimReward(level) {
+            if (userData.claimedRewards.includes(level)) return;
+            
+            const r = rewards[level-1];
+            
+            // 发放奖励
+            userData.totalRewards.vipDays += r.vipDays;
+            userData.totalRewards.readingCoupons += r.coupons;
+            userData.claimedRewards.push(level);
+            
+            saveUserData();
+            
+            // 同步到全局VIP状态
+            let vipData = JSON.parse(localStorage.getItem('fortune_vip_data') || '{}');
+            vipData.vipDays = (vipData.vipDays || 0) + r.vipDays;
+            vipData.readingCoupons = (vipData.readingCoupons || 0) + r.coupons;
+            localStorage.setItem('fortune_vip_data', JSON.stringify(vipData));
+            
+            alert(`🎉 恭喜获得【${r.name}】奖励！\n\n✓ ${r.vipDays}天VIP会员\n✓ ${r.coupons}次免费解读\n\n⚠️ 体验版提示：此奖励目前为本地体验资格。系统升级至云端后，将为您发放正式奖励。`);
+            
+            updateUI();
+        }
+        
+        // 显示奖励详情
+        function showRewardDetail(level) {
+            const r = rewards[level-1];
+            const isReached = userData.inviteCount >= r.requires;
+            const isClaimed = userData.claimedRewards.includes(level);
+            
+            let status = '';
+            if (isClaimed) {
+                status = '✅ 已领取奖励';
+            } else if (isReached) {
+                status = '✅ 已达成，可领取奖励';
+            } else {
+                status = `还需邀请 ${r.requires - userData.inviteCount} 人`;
+            }
+            
+            alert(`${r.icon} ${r.name}\n\n需要邀请：${r.requires}人\n奖励内容：\n• ${r.vipDays}天VIP会员\n• ${r.coupons}次免费解读${r.discount ? '\n• 终身' + r.discount : ''}\n\n${status}`);
+        }
+        
+        // 切换排行榜
+        function switchLeaderboard(type) {
+            document.querySelectorAll('.leaderboard-tab').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            renderLeaderboard(type);
+        }
+        
+        // 渲染排行榜
+        function renderLeaderboard(type) {
+            // 生成动态排行榜数据
+            let data = [...mockUsers];
+            
+            // 插入当前用户
+            const myRank = data.findIndex(u => u.invites <= userData.inviteCount);
+            const myData = {
+                name: '我',
+                avatar: '🧗',
+                invites: userData.inviteCount,
+                reward: getRewardByInvites(userData.inviteCount),
+                isMe: true
+            };
+            
+            if (myRank === -1) {
+                data.push(myData);
+            } else {
+                data.splice(myRank, 0, myData);
+            }
+            
+            // 根据类型排序
+            if (type === 'week') {
+                data = data.slice(0, 10);
+            } else if (type === 'month') {
+                data = data.map(u => ({...u, invites: Math.floor(u.invites * 1.5)})).slice(0, 10);
+            } else {
+                data = data.map(u => ({...u, invites: Math.floor(u.invites * 3)})).slice(0, 10);
+            }
+            
+            // 重新排序
+            data.sort((a, b) => b.invites - a.invites);
+            
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = data.map((item, i) => `
+                <div class="leaderboard-item" style="${item.isMe ? 'background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3);' : ''}">
+                    <div class="rank-number ${i < 3 ? 'top3' : 'normal'}">${i + 1}</div>
+                    <div class="rank-avatar">${item.avatar}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">${item.name} ${item.isMe ? '(我)' : ''}</div>
+                        <div class="rank-invites">已邀请 ${item.invites} 人</div>
+                    </div>
+                    <div class="rank-reward">${item.reward}</div>
+                </div>
+            `).join('');
+        }
+        
+        // 根据邀请数获取奖励描述
+        function getRewardByInvites(invites) {
+            if (invites >= 10) return '30天VIP';
+            if (invites >= 5) return '15天VIP';
+            if (invites >= 3) return '7天VIP';
+            if (invites >= 1) return '3天VIP';
+            return '暂无';
+        }
+        
+        // 实时播报
+        function startLiveBroadcast() {
+            let index = 0;
+            setInterval(() => {
+                index = (index + 1) % liveMessages.length;
+                document.getElementById('liveText').textContent = liveMessages[index];
+            }, 5000);
+        }
+        
+        // 生成海报
+        function generatePoster() {
+            document.getElementById('posterInviteCount').textContent = userData.inviteCount;
+            document.getElementById('posterRewardCount').textContent = userData.claimedRewards.length;
+            document.getElementById('posterModal').classList.remove('hidden');
+        }
+        
+        // 关闭海报
+        function closePoster() {
+            document.getElementById('posterModal').classList.add('hidden');
+        }
+        
+        // 保存海报
+        function savePoster() {
+            alert('海报已保存到相册！（实际项目中这里会生成图片并保存）');
+            closePoster();
+        }
+        
+        // 复制链接
+        function copyLink() {
+            const link = `${window.location.origin}${window.location.pathname}?invite=${userData.inviteCode}&inviter=${userData.userId}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(() => {
+                    showToast('邀请链接已复制！快去分享给好友吧~');
+                });
+            } else {
+                // 降级方案
+                const input = document.createElement('input');
+                input.value = link;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast('邀请链接已复制！');
+            }
+        }
+        
+        // 显示提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.9);
+                color: #FFD700;
+                padding: 20px 30px;
+                border-radius: 10px;
+                font-size: 16px;
+                z-index: 3000;
+                text-align: center;
+                max-width: 80%;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        // 分享微信
+        function shareWechat() {
+            showToast('请使用微信分享功能\n（实际项目中调起微信SDK）');
+        }
+        
+        // 分享朋友圈
+        function shareMoment() {
+            generatePoster();
+        }
+        
+        // 添加演示按钮（开发测试用）
+        function addDemoButton() {
+            // 生产环境不显示测试按钮
+            if (location.hostname !== 'localhost' && location.protocol !== 'file:') {
+                return;
+            }
+            
+            const btn = document.createElement('button');
+            btn.textContent = '🎮 模拟邀请（测试）';
+            btn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                padding: 10px 15px;
+                background: rgba(255,215,0,0.2);
+                border: 1px solid #FFD700;
+                color: #FFD700;
+                border-radius: 20px;
+                font-size: 12px;
+                cursor: pointer;
+                z-index: 100;
+            `;
+            btn.onclick = simulateInvite;
+            document.body.appendChild(btn);
+        }
+        
+        init();
+        
+        // 开发环境显示测试按钮
+        addDemoButton();
+    </script>
+</body>
+</html>

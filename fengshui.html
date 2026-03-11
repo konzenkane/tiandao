@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>风水罗盘 - 天道元一</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #FFD700;
+            --primary-crimson: #C41E3A;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(20, 20, 30, 0.95);
+            --text-light: #f0f0f0;
+            --text-muted: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary-gold);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .upload-hint {
+            color: var(--primary-gold);
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: var(--primary-gold);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .fengshui-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border-left: 4px solid var(--primary-gold);
+        }
+
+        .fengshui-section h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .fengshui-section p {
+            color: var(--text-light);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .direction-item {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .direction-item .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .direction-item .value {
+            color: var(--primary-gold);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(196, 30, 58, 0.1) 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .score-value {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--primary-gold);
+        }
+
+        .score-label {
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        .paywall {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .paywall h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← 返回首页</a>
+            <h1>☯ 风水罗盘</h1>
+            <p class="subtitle">上传房屋照片，AI智能分析风水格局</p>
+        </header>
+
+        <div class="form-card" id="inputForm">
+            <form id="fengshuiForm">
+                <div class="form-group">
+                    <label>🏠 房屋朝向</label>
+                    <select id="direction" required>
+                        <option value="">请选择房屋朝向</option>
+                        <option value="东">坐西朝东</option>
+                        <option value="南">坐北朝南</option>
+                        <option value="西">坐东朝西</option>
+                        <option value="北">坐南朝北</option>
+                        <option value="东南">坐西北朝东南</option>
+                        <option value="东北">坐西南朝东北</option>
+                        <option value="西南">坐东北朝西南</option>
+                        <option value="西北">坐东南朝西北</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📅 入住日期</label>
+                    <input type="date" id="moveDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📸 上传房屋照片（客厅/大门/卧室）</label>
+                    <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">点击上传照片</div>
+                        <div class="upload-hint">支持 JPG、PNG 格式</div>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <img id="preview" class="preview-image" alt="预览">
+                </div>
+
+                <div class="form-group">
+                    <label>📝 补充说明（可选）</label>
+                    <textarea id="notes" placeholder="请描述房屋的特殊情况，如：门口有电线杆、窗户对医院等..."></textarea>
+                </div>
+
+                <input type="hidden" id="selectedPrice" value="8.8">
+
+                <button type="submit" class="submit-btn">🔮 开始风水分析</button>
+            </form>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2 class="result-title">🏠 风水分析报告</h2>
+            
+            <div class="score-display">
+                <div class="score-value" id="fengshuiScore">85</div>
+                <div class="score-label">风水综合评分</div>
+            </div>
+
+            <div class="fengshui-section">
+                <h3>🧭 房屋朝向分析</h3>
+                <p id="directionAnalysis">根据您房屋的朝向，结合八宅风水理论...</p>
+            </div>
+
+            <div class="fengshui-section">
+                <h3>⭐ 吉凶方位</h3>
+                <div class="direction-grid">
+                    <div class="direction-item">
+                        <span class="label">财位</span>
+                        <span class="value" id="wealthDirection">东南</span>
+                    </div>
+                    <div class="direction-item">
+                        <span class="label">桃花位</span>
+                        <span class="value" id="loveDirection">正南</span>
+                    </div>
+                    <div class="direction-item">
+                        <span class="label">文昌位</span>
+                        <span class="value" id="studyDirection">东北</span>
+                    </div>
+                    <div class="direction-item">
+                        <span class="label">健康位</span>
+                        <span class="value" id="healthDirection">正东</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fengshui-section">
+                <h3>💡 布局建议</h3>
+                <p id="layoutAdvice">根据风水分析，为您提供以下布局建议...</p>
+            </div>
+
+            <div class="fengshui-section">
+                <h3>⚠️ 注意事项</h3>
+                <p id="fengshuiWarning">需要注意以下风水禁忌...</p>
+            </div>
+
+            <div class="paywall" id="paywall">
+                <span class="vip-badge">VIP专属</span>
+                <h3>🎁 查看完整风水报告</h3>
+                <p>升级VIP解锁详细化解方案、流年风水、催旺布局</p>
+                <button class="submit-btn" onclick="showPayment()" style="margin-top: 20px;">升级VIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 风水分析库
+        const fengshuiData = {
+            directions: {
+                '东': { score: 85, desc: '紫气东来，旭日东升，利于事业发展。东方属木，主生长、发展，适合创业者、年轻人居住。', wealth: '东南', love: '正南', study: '东北', health: '正东' },
+                '南': { score: 90, desc: '坐北朝南，帝王之向，采光充足，阳气旺盛。南方属火，主名声、地位，最利于事业发展和家庭和睦。', wealth: '东南', love: '正西', study: '正北', health: '正南' },
+                '西': { score: 75, desc: '夕阳西下，金气旺盛，利于财运积累。西方属金，主收获、财富，适合经商、财务人员居住。', wealth: '正西', love: '西北', study: '西南', health: '东北' },
+                '北': { score: 70, desc: '坐南朝北，阴气较重，适合修身养性。北方属水，主智慧、学业，适合学者、研究人员居住。', wealth: '正东', love: '东南', study: '正北', health: '正南' },
+                '东南': { score: 88, desc: '文昌位所在，利于学业和考试。东南方属木，主智慧、文昌，适合学生、考生、文职人员。', wealth: '东南', love: '正南', study: '东南', health: '正东' },
+                '东北': { score: 78, desc: '艮位所在，主子孙运。东北方属土，主稳定、子孙，适合有子女的家庭居住。', wealth: '正西', love: '正北', study: '东北', health: '西南' },
+                '西南': { score: 82, desc: '坤位所在，主女主人运势。西南方属土，主家庭、母亲，利于家庭和睦、女主人的健康。', wealth: '西北', love: '西南', study: '正西', health: '西南' },
+                '西北': { score: 86, desc: '乾位所在，主男主人运势。西北方属金，主权威、父亲，利于男主人的事业发展和健康。', wealth: '西北', love: '西南', study: '正北', health: '西北' }
+            },
+            layoutAdvice: [
+                '客厅宜明亮宽敞，沙发背后宜有靠山（实墙），避免背对门窗。财位宜放置绿植或招财摆件。',
+                '卧室床头宜靠实墙，避免床头朝向卫生间或厨房。镜子不宜正对床铺，以免影响睡眠。',
+                '大门不宜正对电梯、楼梯或尖角。门口宜保持整洁明亮，可放置地垫或屏风化解煞气。',
+                '厨房炉灶不宜正对水槽或冰箱，形成水火相冲。炉灶背后宜有实墙，象征有靠山。',
+                '卫生间门不宜正对大门、卧室门或厨房门。保持卫生间干燥通风，可放置绿植净化空气。',
+                '书房宜安静明亮，书桌宜面向门口但不宜正对。文昌位可放置文昌塔或四支毛笔催旺学业。',
+                '阳台宜保持整洁，不宜堆放杂物。可种植吉祥植物如发财树、富贵竹等，增添生气。',
+                '走廊不宜过长或过于狭窄，可用灯光或装饰画化解。避免走廊尽头是卫生间门。'
+            ],
+            warnings: [
+                '避免房屋缺角，特别是西北（男主）、西南（女主）方位。如有缺角可用泰山石敢当或镜子化解。',
+                '横梁压顶为大忌，特别是床、沙发、书桌上方。可用吊顶装饰或悬挂葫芦化解。',
+                '尖角煞需化解，窗外有尖角建筑可用凸面镜或窗帘遮挡。室内避免家具尖角对人。',
+                '穿堂煞不利聚财，大门直对阳台或窗户可用屏风、玄关或水晶帘化解。',
+                '厕所居中为凶，卫生间不宜在房屋中心。可用五帝钱或葫芦化解，保持清洁干燥。',
+                '光线宜充足但不宜过强，阴暗角落可用灯光补充。避免阳光直射床铺，影响睡眠。',
+                '植物选择有讲究，避免带刺植物如仙人掌在客厅。卧室不宜放置过多植物，夜间耗氧。',
+                '颜色搭配要和谐，根据主人命理五行选择主色调。避免大面积使用过于鲜艳或阴暗的颜色。'
+            ]
+        };
+
+        // 设置默认日期为今天
+        document.getElementById('moveDate').valueAsDate = new Date();
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('fengshuiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const direction = document.getElementById('direction').value;
+            const moveDate = document.getElementById('moveDate').value;
+            const notes = document.getElementById('notes').value;
+            
+            // 生成随机种子
+            const seed = direction + moveDate + Math.floor(Math.random() * 1000);
+            const randomIndex = (seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 8;
+            
+            // 获取风水数据
+            const fengshui = fengshuiData.directions[direction];
+            
+            // 随机分数波动
+            const score = Math.max(60, Math.min(95, fengshui.score + Math.floor(Math.random() * 10) - 5));
+            
+            // 更新分数
+            document.getElementById('fengshuiScore').textContent = score;
+            
+            // 更新分析
+            document.getElementById('directionAnalysis').textContent = fengshui.desc;
+            document.getElementById('wealthDirection').textContent = fengshui.wealth;
+            document.getElementById('loveDirection').textContent = fengshui.love;
+            document.getElementById('studyDirection').textContent = fengshui.study;
+            document.getElementById('healthDirection').textContent = fengshui.health;
+            
+            // 随机建议
+            document.getElementById('layoutAdvice').textContent = fengshuiData.layoutAdvice[randomIndex];
+            document.getElementById('fengshuiWarning').textContent = fengshuiData.warnings[(randomIndex + 1) % 8];
+            
+            // 显示结果
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('resultSection').classList.add('active');
+        });
+
+        function showPayment() {
+            alert('感谢您的支持！\n\n请联系客服完成支付：\n电话：180-5812-5388\n微信：80506070');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>配偶匹配 - 天道元一</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #f0f0f0;
+        }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 100px; }
+        .header { text-align: center; padding: 30px 0; border-bottom: 1px solid rgba(255, 215, 0, 0.2); margin-bottom: 20px; }
+        .header h1 { font-size: 32px; color: #FFD700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); margin-bottom: 10px; }
+        .header p { color: #888; font-size: 16px; }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-title { font-size: 20px; color: #FFD700; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .person-section { margin-bottom: 25px; }
+        .person-title { color: #FFD700; font-size: 16px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 215, 0, 0.2); }
+        .form-item { margin-bottom: 15px; }
+        .form-label { display: block; color: #888; margin-bottom: 8px; font-size: 14px; }
+        .form-input, .form-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 15px;
+            color: #f0f0f0;
+            font-size: 15px;
+        }
+        .datetime-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .gender-row { display: flex; gap: 15px; }
+        .gender-option {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .gender-option.active { border-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .gender-icon { font-size: 28px; margin-bottom: 5px; }
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-secondary {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .loading { text-align: center; padding: 50px; }
+        .loading-spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 105, 180, 0.1));
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        .match-score { font-size: 72px; color: #FFD700; font-weight: bold; }
+        .match-level { font-size: 24px; color: #FF69B4; margin-top: 10px; }
+        .match-desc { color: #888; margin-top: 10px; }
+        
+        .aspect-list { margin: 20px 0; }
+        .aspect-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .aspect-icon { font-size: 24px; margin-right: 15px; }
+        .aspect-info { flex: 1; }
+        .aspect-name { color: #f0f0f0; font-size: 15px; }
+        .aspect-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .aspect-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FF69B4);
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+        .aspect-score { color: #FFD700; font-weight: bold; margin-left: 10px; }
+        
+        .analysis-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #FFD700;
+            border-radius: 0 12px 12px 0;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .analysis-title { color: #FFD700; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        .analysis-content { color: #f0f0f0; font-size: 14px; line-height: 1.8; }
+        
+        .zodiac-match {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .zodiac-item { text-align: center; }
+        .zodiac-emoji { font-size: 48px; }
+        .zodiac-name { color: #FFD700; font-size: 16px; margin-top: 5px; }
+        .zodiac-wuxing { color: #888; font-size: 12px; }
+        .zodiac-connector { display: flex; align-items: center; font-size: 32px; color: #FFD700; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💕 配偶匹配</h1>
+            <p>八字合婚、生肖配对、五行互补分析</p>
+        </div>
+
+        <div id="inputSection">
+            <div class="card">
+                <div class="card-title">男方信息</div>
+                <div class="person-section">
+                    <div class="form-item">
+                        <label class="form-label">出生日期</label>
+                        <div class="datetime-row">
+                            <select class="form-select" id="maleYear"></select>
+                            <select class="form-select" id="maleMonth"></select>
+                            <select class="form-select" id="maleDay"></select>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">出生时辰</label>
+                        <select class="form-select" id="maleHour">
+                            <option value="">未知</option>
+                            <option value="0">子时 (23-1点)</option>
+                            <option value="1">丑时 (1-3点)</option>
+                            <option value="2">寅时 (3-5点)</option>
+                            <option value="3">卯时 (5-7点)</option>
+                            <option value="4">辰时 (7-9点)</option>
+                            <option value="5">巳时 (9-11点)</option>
+                            <option value="6">午时 (11-13点)</option>
+                            <option value="7">未时 (13-15点)</option>
+                            <option value="8">申时 (15-17点)</option>
+                            <option value="9">酉时 (17-19点)</option>
+                            <option value="10">戌时 (19-21点)</option>
+                            <option value="11">亥时 (21-23点)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">女方信息</div>
+                <div class="person-section">
+                    <div class="form-item">
+                        <label class="form-label">出生日期</label>
+                        <div class="datetime-row">
+                            <select class="form-select" id="femaleYear"></select>
+                            <select class="form-select" id="femaleMonth"></select>
+                            <select class="form-select" id="femaleDay"></select>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">出生时辰</label>
+                        <select class="form-select" id="femaleHour">
+                            <option value="">未知</option>
+                            <option value="0">子时 (23-1点)</option>
+                            <option value="1">丑时 (1-3点)</option>
+                            <option value="2">寅时 (3-5点)</option>
+                            <option value="3">卯时 (5-7点)</option>
+                            <option value="4">辰时 (7-9点)</option>
+                            <option value="5">巳时 (9-11点)</option>
+                            <option value="6">午时 (11-13点)</option>
+                            <option value="7">未时 (13-15点)</option>
+                            <option value="8">申时 (15-17点)</option>
+                            <option value="9">酉时 (17-19点)</option>
+                            <option value="10">戌时 (19-21点)</option>
+                            <option value="11">亥时 (21-23点)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="match()">开始匹配</button>
+        </div>
+
+        <div id="loadingSection" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <div style="color: #FFD700;">正在分析八字合婚...</div>
+        </div>
+
+        <div id="resultSection" class="hidden">
+            <div class="score-display">
+                <div class="match-score" id="matchScore">85</div>
+                <div class="match-level" id="matchLevel">天作之合</div>
+                <div class="match-desc">综合匹配指数</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🐉 生肖配对</div>
+                <div class="zodiac-match">
+                    <div class="zodiac-item">
+                        <div class="zodiac-emoji" id="maleZodiac">🐉</div>
+                        <div class="zodiac-name" id="maleZodiacName">龙</div>
+                        <div class="zodiac-wuxing" id="maleZodiacWx">土</div>
+                    </div>
+                    <div class="zodiac-connector">💕</div>
+                    <div class="zodiac-item">
+                        <div class="zodiac-emoji" id="femaleZodiac">🐔</div>
+                        <div class="zodiac-name" id="femaleZodiacName">鸡</div>
+                        <div class="zodiac-wuxing" id="femaleZodiacWx">金</div>
+                    </div>
+                </div>
+                <div class="analysis-content" id="zodiacAnalysis" style="text-align: center; color: #888;">
+                    龙鸡六合，上等婚配
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 匹配维度</div>
+                <div class="aspect-list" id="aspectList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔮 详细分析</div>
+                <div class="analysis-card">
+                    <div class="analysis-title">八字合婚</div>
+                    <div class="analysis-content" id="baziAnalysis">
+                        男方日主为丙火，女方日主为辛金，火克金为正财，主夫妻恩爱，男主外女主内，配合默契。
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">五行互补</div>
+                    <div class="analysis-content" id="wuxingAnalysis">
+                        男方五行火旺，女方五行金旺，火克金为财，金生水为官，五行流通有情，互补性强。
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">性格匹配</div>
+                    <div class="analysis-content" id="personalityAnalysis">
+                        男方性格热情开朗，女方性格沉稳内敛，一动一静，性格互补，相处和谐。
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">婚姻建议</div>
+                    <div class="analysis-content" id="marriageAdvice">
+                        两人缘分深厚，适合结婚。婚后注意沟通方式，男方多包容，女方多理解，婚姻美满。
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-secondary" onclick="reset()">重新匹配</button>
+        </div>
+    </div>
+
+    <script>
+        const zodiacs = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+        const zodiacEmojis = ['🐭', '🐮', '🐯', '🐰', '🐉', '🐍', '🐴', '🐑', '🐒', '🐔', '🐕', '🐷'];
+        const wuxing = ['水', '土', '木', '木', '土', '火', '火', '土', '金', '金', '土', '水'];
+        
+        function initDateSelects() {
+            const currentYear = new Date().getFullYear();
+            ['male', 'female'].forEach(gender => {
+                const yearSel = document.getElementById(gender + 'Year');
+                for (let i = currentYear - 18; i >= currentYear - 60; i--) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = i + '年';
+                    yearSel.appendChild(opt);
+                }
+                yearSel.value = gender === 'male' ? currentYear - 28 : currentYear - 26;
+
+                ['Month', 'Day'].forEach(type => {
+                    const sel = document.getElementById(gender + type);
+                    const max = type === 'Month' ? 12 : 31;
+                    for (let i = 1; i <= max; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = i;
+                        opt.textContent = i + (type === 'Month' ? '月' : '日');
+                        sel.appendChild(opt);
+                    }
+                    sel.value = type === 'Month' ? 6 : 15;
+                });
+            });
+        }
+        initDateSelects();
+
+        function match() {
+            document.getElementById('inputSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            setTimeout(showResult, 1500);
+        }
+
+        function showResult() {
+            const maleYear = parseInt(document.getElementById('maleYear').value);
+            const femaleYear = parseInt(document.getElementById('femaleYear').value);
+            
+            const maleZodiacIdx = (maleYear - 4) % 12;
+            const femaleZodiacIdx = (femaleYear - 4) % 12;
+            
+            // 生肖显示
+            document.getElementById('maleZodiac').textContent = zodiacEmojis[maleZodiacIdx];
+            document.getElementById('maleZodiacName').textContent = zodiacs[maleZodiacIdx];
+            document.getElementById('maleZodiacWx').textContent = wuxing[maleZodiacIdx];
+            document.getElementById('femaleZodiac').textContent = zodiacEmojis[femaleZodiacIdx];
+            document.getElementById('femaleZodiacName').textContent = zodiacs[femaleZodiacIdx];
+            document.getElementById('femaleZodiacWx').textContent = wuxing[femaleZodiacIdx];
+            
+            // 计算匹配分数
+            const diff = Math.abs(maleZodiacIdx - femaleZodiacIdx);
+            let score = 60 + Math.floor(Math.random() * 35);
+            let level = score >= 90 ? '天作之合' : score >= 80 ? '金玉良缘' : score >= 70 ? '情投意合' : score >= 60 ? '相敬如宾' : '需要磨合';
+            
+            document.getElementById('matchScore').textContent = score;
+            document.getElementById('matchLevel').textContent = level;
+            
+            // 生肖分析
+            const hePairs = [[0, 11], [1, 10], [2, 9], [3, 8], [4, 7], [5, 6]];
+            const isHe = hePairs.some(p => (p[0] === maleZodiacIdx && p[1] === femaleZodiacIdx) || (p[1] === maleZodiacIdx && p[0] === femaleZodiacIdx));
+            document.getElementById('zodiacAnalysis').textContent = isHe ? 
+                zodiacs[maleZodiacIdx] + zodiacs[femaleZodiacIdx] + '六合，上等婚配，天生一对' : 
+                zodiacs[maleZodiacIdx] + '与' + zodiacs[femaleZodiacIdx] + '相配，' + (score >= 70 ? '缘分不错' : '需要多包容');
+            
+            // 维度评分
+            const aspects = [
+                { name: '生肖配对', icon: '🐉', score: Math.floor(Math.random() * 20) + 75 },
+                { name: '八字合婚', icon: '☯', score: Math.floor(Math.random() * 20) + 70 },
+                { name: '五行互补', icon: '🔄', score: Math.floor(Math.random() * 25) + 65 },
+                { name: '性格匹配', icon: '💑', score: Math.floor(Math.random() * 20) + 72 },
+                { name: '缘分指数', icon: '✨', score: score }
+            ];
+            
+            document.getElementById('aspectList').innerHTML = aspects.map(a => `
+                <div class="aspect-item">
+                    <div class="aspect-icon">${a.icon}</div>
+                    <div class="aspect-info">
+                        <div class="aspect-name">${a.name}</div>
+                        <div class="aspect-bar">
+                            <div class="aspect-fill" style="width: ${a.score}%"></div>
+                        </div>
+                    </div>
+                    <div class="aspect-score">${a.score}</div>
+                </div>
+            `).join('');
+            
+            // 详细分析
+            const analyses = [
+                `男方日主为${['甲', '乙', '丙', '丁', '戊'][Math.floor(Math.random()*5)]}${['木', '木', '火', '火', '土'][Math.floor(Math.random()*5)]}，女方日主为${['庚', '辛', '壬', '癸', '戊'][Math.floor(Math.random()*5)]}${['金', '金', '水', '水', '土'][Math.floor(Math.random()*5)]}，${score >= 75 ? '五行相生，夫妻恩爱' : '五行有克，需要包容'}。`,
+                `男方五行${wuxing[maleZodiacIdx]}旺，女方五行${wuxing[femaleZodiacIdx]}旺，${isHe ? '五行互补，相得益彰' : '五行需要调和'}。`,
+                `男方性格${Math.random()>0.5?'热情开朗':'沉稳内敛'}，女方性格${Math.random()>0.5?'温柔体贴':'独立自主'}，${score>=70?'性格互补，相处和谐':'性格有差异，需要磨合'}。`,
+                `两人缘分${score>=80?'深厚':'尚可'}，${score>=75?'适合结婚，婚后美满':'可以发展，多沟通理解'}。婚后注意${Math.random()>0.5?'沟通方式':'经济管理'}，${score>=70?'婚姻幸福':'慢慢磨合'}。`
+            ];
+            
+            document.getElementById('baziAnalysis').textContent = analyses[0];
+            document.getElementById('wuxingAnalysis').textContent = analyses[1];
+            document.getElementById('personalityAnalysis').textContent = analyses[2];
+            document.getElementById('marriageAdvice').textContent = analyses[3];
+            
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+        }
+
+        function reset() {
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('inputSection').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

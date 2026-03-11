@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI面相分析 - 天道元一</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gold: #FFD700;
+            --primary-crimson: #C41E3A;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(20, 20, 30, 0.95);
+            --text-light: #f0f0f0;
+            --text-muted: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary-gold);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: var(--primary-gold);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 50px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .upload-tips {
+            color: var(--primary-gold);
+            font-size: 0.85rem;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            border: 2px solid var(--primary-gold);
+        }
+
+        .face-guide {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .guide-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .guide-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .guide-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: var(--primary-gold);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .face-overview {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(196, 30, 58, 0.1) 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .face-type {
+            font-size: 2.5rem;
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+        }
+
+        .face-desc {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-gold);
+        }
+
+        .score-label {
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        .face-section {
+            margin-bottom: 25px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border-left: 4px solid var(--primary-gold);
+        }
+
+        .face-section h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .face-section p {
+            color: var(--text-light);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .feature-tag {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--primary-gold);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .paywall {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .paywall h3 {
+            color: var(--primary-gold);
+            margin-bottom: 15px;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, #B8860B 100%);
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← 返回首页</a>
+            <h1>👤 AI面相分析</h1>
+            <p class="subtitle">上传照片，智能解析五官命理</p>
+        </header>
+
+        <div class="form-card" id="inputForm">
+            <form id="faceForm">
+                <div class="form-group">
+                    <label>📸 上传正面照片</label>
+                    <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">点击上传面相照片</div>
+                        <div class="upload-hint">请上传清晰的正面免冠照片</div>
+                        <div class="upload-tips">💡 光线充足、面部无遮挡、表情自然</div>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <img id="preview" class="preview-image" alt="面相预览">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 拍照指南</label>
+                    <div class="face-guide">
+                        <div class="guide-item">
+                            <div class="guide-icon">💡</div>
+                            <div class="guide-text">光线充足</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">😊</div>
+                            <div class="guide-text">表情自然</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">👤</div>
+                            <div class="guide-text">正面免冠</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">👓</div>
+                            <div class="guide-text">摘掉眼镜</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">💇</div>
+                            <div class="guide-text">露出额头</div>
+                        </div>
+                        <div class="guide-item">
+                            <div class="guide-icon">🎯</div>
+                            <div class="guide-text">五官清晰</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>⚥ 性别</label>
+                    <select id="gender" required>
+                        <option value="">请选择</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🎂 出生年份</label>
+                    <select id="birthYear" required>
+                        <option value="">请选择出生年份</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">🔮 开始面相分析</button>
+            </form>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2 class="result-title">👤 面相分析报告</h2>
+            
+            <div class="face-overview">
+                <div class="face-type" id="faceType">🎯 方圆脸</div>
+                <p class="face-desc" id="faceTypeDesc">您的面相属于方圆脸，主富贵荣华，性格稳重踏实...</p>
+            </div>
+
+            <div class="score-grid">
+                <div class="score-item">
+                    <div class="score-value" id="wealthScore">85</div>
+                    <div class="score-label">财运指数</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="careerScore">80</div>
+                    <div class="score-label">事业指数</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="loveScore">88</div>
+                    <div class="score-label">桃花指数</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="healthScore">82</div>
+                    <div class="score-label">健康指数</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="wisdomScore">86</div>
+                    <div class="score-label">智慧指数</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="luckScore">84</div>
+                    <div class="score-label">福气指数</div>
+                </div>
+            </div>
+
+            <div class="face-section">
+                <h3>👁️ 五官分析</h3>
+                <p id="featuresAnalysis">根据您的五官特征分析...</p>
+                <div class="feature-tags" id="featureTags">
+                    <span class="feature-tag">眉清目秀</span>
+                    <span class="feature-tag">鼻直口方</span>
+                    <span class="feature-tag">耳大垂厚</span>
+                </div>
+            </div>
+
+            <div class="face-section">
+                <h3>💼 事业财运</h3>
+                <p id="careerFortune">您的事业运势分析...</p>
+            </div>
+
+            <div class="face-section">
+                <h3>💕 感情婚姻</h3>
+                <p id="loveFortune">您的感情运势分析...</p>
+            </div>
+
+            <div class="face-section">
+                <h3>🏥 健康提示</h3>
+                <p id="healthFortune">您的健康运势分析...</p>
+            </div>
+
+            <div class="face-section">
+                <h3>🎁 开运建议</h3>
+                <p id="luckyAdvice">根据您的面相特征，为您提供以下开运建议...</p>
+            </div>
+
+            <div class="paywall" id="paywall">
+                <span class="vip-badge">VIP专属</span>
+                <h3>🔮 查看完整面相报告</h3>
+                <p>升级VIP解锁详细流年运势、改运方法、贵人方位</p>
+                <button class="submit-btn" onclick="showPayment()" style="margin-top: 20px;">升级VIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 面相分析数据库
+        const faceData = {
+            faceTypes: [
+                { type: '方圆脸', emoji: '🎯', desc: '主富贵荣华，性格稳重踏实，做事有条理，财运亨通，中年后运势更佳。', wealth: 88, career: 85, love: 82, health: 86, wisdom: 84, luck: 87 },
+                { type: '瓜子脸', emoji: '💎', desc: '主聪明伶俐，多才多艺，人缘极佳，桃花运旺，但需注意感情波折。', wealth: 82, career: 88, love: 92, health: 78, wisdom: 90, luck: 85 },
+                { type: '圆脸', emoji: '🌕', desc: '主福气满满，性格开朗乐观，人缘好，财运稳定，晚年享福。', wealth: 85, career: 80, love: 88, health: 90, wisdom: 78, luck: 92 },
+                { type: '长脸', emoji: '📏', desc: '主智慧过人，思虑周全，适合从事研究、策划工作，中年后事业有成。', wealth: 80, career: 88, love: 75, health: 82, wisdom: 92, luck: 80 },
+                { type: '方脸', emoji: '⬜', desc: '主意志坚定，执行力强，领导才能出众，事业运佳，财运亨通。', wealth: 90, career: 92, love: 78, health: 85, wisdom: 82, luck: 84 },
+                { type: '鹅蛋脸', emoji: '🥚', desc: '主温婉贤淑，气质优雅，人缘极佳，婚姻美满，一生顺遂。', wealth: 84, career: 82, love: 95, health: 88, wisdom: 86, luck: 90 },
+                { type: '菱形脸', emoji: '🔷', desc: '主个性鲜明，艺术天赋高，创意十足，适合从事艺术、设计工作。', wealth: 78, career: 85, love: 80, health: 76, wisdom: 88, luck: 82 },
+                { type: '心形脸', emoji: '💗', desc: '主桃花运旺，异性缘佳，感情丰富，但需注意理财，避免冲动消费。', wealth: 75, career: 80, love: 95, health: 80, wisdom: 82, luck: 85 }
+            ],
+            features: [
+                { name: '眉清目秀', desc: '眉毛清秀，眼睛明亮，主聪明智慧，人缘好，事业顺利。' },
+                { name: '鼻直口方', desc: '鼻梁挺直，口型方正，主财运亨通，为人正直，有领导才能。' },
+                { name: '耳大垂厚', desc: '耳朵大而厚，耳垂明显，主福气深厚，长寿健康，晚年运佳。' },
+                { name: '天庭饱满', desc: '额头宽广饱满，主智慧过人，早年运佳，学业事业有成。' },
+                { name: '地阁方圆', desc: '下巴方圆有肉，主晚年运好，子女孝顺，家庭和睦。' },
+                { name: '眼大有神', desc: '眼睛大而有神，主聪明伶俐，洞察力强，人缘极佳。' },
+                { name: '唇红齿白', desc: '嘴唇红润，牙齿洁白，主健康长寿，口才佳，人际关系好。' },
+                { name: '颧骨高耸', desc: '颧骨适中高耸，主权势地位，事业心强，有领导才能。' }
+            ],
+            careerFortunes: [
+                '您的事业运势稳中有升，适合从事管理、策划类工作。中年后有贵人提携，事业更上一层楼。建议多学习提升，把握机会。',
+                '您具有出色的领导才能，适合创业或担任管理职位。财运亨通，但需注意理财，避免不必要的开支。',
+                '您的事业发展较为平稳，适合从事技术、专业类工作。凭借专业技能，能够获得稳定的收入和地位。',
+                '您具有艺术天赋和创意思维，适合从事设计、创意、艺术类工作。中年后有望成名，获得认可。',
+                '您的人际关系极佳，适合从事销售、公关、服务类工作。凭借好人缘，事业发展顺利，财源广进。',
+                '您具有敏锐的商业嗅觉，适合从事商业、投资、金融类工作。财运旺盛，但需谨慎决策，避免冒险。',
+                '您适合从事教育、研究、学术类工作。凭借专业知识和智慧，能够获得尊重和成就。',
+                '您具有坚韧不拔的毅力，适合从事需要长期坚持的工作。虽然起步较慢，但后期发展势头强劲。'
+            ],
+            loveFortunes: [
+                '您的桃花运旺盛，异性缘佳。单身者有望遇到心仪对象，已婚者感情甜蜜。但需注意把握分寸，避免感情纠纷。',
+                '您的感情运势平稳，适合稳定发展。已婚者与伴侣关系和睦，单身者可通过朋友介绍认识合适对象。',
+                '您的感情较为波折，需要耐心等待。建议先专注于事业，缘分自然到来。婚后感情稳定，白头偕老。',
+                '您具有独特的魅力，容易吸引异性。但需注意分辨真假，避免被表象迷惑。真爱需要用心经营。',
+                '您的婚姻运势极佳，有望找到门当户对的伴侣。婚后生活幸福美满，子女孝顺，家庭和睦。',
+                '您的感情较为内敛，需要主动一些。建议多参加社交活动，扩大交际圈，增加遇到良缘的机会。',
+                '您的桃花运在中年后更旺，早婚可能不利。建议晚婚，选择成熟稳重的伴侣，婚姻更加美满。',
+                '您与伴侣需要多沟通理解，避免误会。感情需要经营，多关心对方，感情会更加深厚。'
+            ],
+            healthFortunes: [
+                '您的健康状况良好，精力充沛。但需注意劳逸结合，避免过度劳累。建议定期体检，预防为主。',
+                '您需要注意肠胃健康，饮食宜清淡规律。避免暴饮暴食，少吃辛辣刺激食物，保护消化系统。',
+                '您需要关注心血管健康，避免情绪激动。建议适当运动，保持心情愉悦，定期监测血压。',
+                '您的体质偏虚弱，需要加强锻炼，增强体质。注意保暖，避免受凉，多吃滋补食物。',
+                '您的健康状况总体良好，但需注意眼睛保护。避免长时间用眼，多做眼保健操，保护视力。',
+                '您需要注意呼吸系统健康，避免吸烟和二手烟。保持室内空气流通，多做深呼吸运动。',
+                '您的骨骼关节需要保养，避免久坐久站。建议适当运动，补充钙质，保护骨骼健康。',
+                '您需要注意精神健康，避免过度焦虑。建议冥想放松，保持乐观心态，必要时寻求帮助。'
+            ],
+            luckyAdvice: [
+                '根据您的面相，建议多穿金色、黄色系衣服，有助于提升财运。佩戴玉器或水晶饰品，增强个人气场。',
+                '您的幸运方位是东南方，办公桌或床头朝向东南，有助于事业发展和健康运势。',
+                '建议在家中摆放绿色植物，如发财树、富贵竹等，增添生气，催旺财运和事业运。',
+                '您的幸运数字是6和8，重要日子可选择带有这些数字的日期，有助于事情顺利进行。',
+                '建议多行善积德，帮助他人，积累福报。善心善行会让您的运势越来越好，贵人相助。',
+                '保持乐观积极的心态，微笑面对生活。良好的心态是最好的风水，会让您容光焕发，运势亨通。',
+                '建议您学习一项新技能或培养一个爱好，丰富生活，提升个人魅力，也有助于事业发展。',
+                '定期整理家居环境，保持整洁明亮。良好的居住环境会让您心情舒畅，运势自然提升。'
+            ]
+        };
+
+        // 生成年份选项
+        const yearSelect = document.getElementById('birthYear');
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear - 80; year <= currentYear - 18; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year + '年';
+            yearSelect.appendChild(option);
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('faceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const gender = document.getElementById('gender').value;
+            const birthYear = document.getElementById('birthYear').value;
+            
+            // 生成随机种子
+            const seed = gender + birthYear + Math.floor(Math.random() * 1000);
+            const randomIndex = (seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 8;
+            
+            // 随机选择面相类型
+            const faceType = faceData.faceTypes[randomIndex];
+            
+            // 随机分数波动
+            const scores = {
+                wealth: Math.max(70, Math.min(95, faceType.wealth + Math.floor(Math.random() * 10) - 5)),
+                career: Math.max(70, Math.min(95, faceType.career + Math.floor(Math.random() * 10) - 5)),
+                love: Math.max(70, Math.min(95, faceType.love + Math.floor(Math.random() * 10) - 5)),
+                health: Math.max(70, Math.min(95, faceType.health + Math.floor(Math.random() * 10) - 5)),
+                wisdom: Math.max(70, Math.min(95, faceType.wisdom + Math.floor(Math.random() * 10) - 5)),
+                luck: Math.max(70, Math.min(95, faceType.luck + Math.floor(Math.random() * 10) - 5))
+            };
+            
+            // 更新面相类型
+            document.getElementById('faceType').textContent = faceType.emoji + ' ' + faceType.type;
+            document.getElementById('faceTypeDesc').textContent = faceType.desc;
+            
+            // 更新分数
+            document.getElementById('wealthScore').textContent = scores.wealth;
+            document.getElementById('careerScore').textContent = scores.career;
+            document.getElementById('loveScore').textContent = scores.love;
+            document.getElementById('healthScore').textContent = scores.health;
+            document.getElementById('wisdomScore').textContent = scores.wisdom;
+            document.getElementById('luckScore').textContent = scores.luck;
+            
+            // 更新五官特征
+            const features = [];
+            for (let i = 0; i < 3; i++) {
+                features.push(faceData.features[(randomIndex + i) % 8].name);
+            }
+            document.getElementById('featuresAnalysis').textContent = 
+                '您的面相特征：' + features.join('、') + '。' + 
+                faceData.features[randomIndex].desc;
+            
+            // 更新特征标签
+            const tagsContainer = document.getElementById('featureTags');
+            tagsContainer.innerHTML = features.map(f => `<span class="feature-tag">${f}</span>`).join('');
+            
+            // 更新各方面运势
+            document.getElementById('careerFortune').textContent = faceData.careerFortunes[randomIndex];
+            document.getElementById('loveFortune').textContent = faceData.loveFortunes[(randomIndex + 1) % 8];
+            document.getElementById('healthFortune').textContent = faceData.healthFortunes[(randomIndex + 2) % 8];
+            document.getElementById('luckyAdvice').textContent = faceData.luckyAdvice[(randomIndex + 3) % 8];
+            
+            // 显示结果
+            document.getElementById('inputForm').style.display = 'none';
+            document.getElementById('resultSection').classList.add('active');
+        });
+
+        function showPayment() {
+            alert('感谢您的支持！\n\n请联系客服完成支付：\n电话：180-5812-5388\n微信：80506070');
+        }
+    </script>
+</body>
+</html>

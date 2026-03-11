@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收款码管理 - 天道元一</title>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark: #0a0a0f;
+            --text: #f0f0f0;
+            --muted: #888;
+            --green: #4CAF50;
+            --red: #f44336;
+            --blue: #2196F3;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", serif;
+            background: var(--dark);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* 登录页 */
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+        .login-box {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 50px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-box h1 {
+            color: var(--gold);
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gold), #FFA500);
+            color: #000;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .login-box button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* 管理页 */
+        .admin-page { display: none; }
+        .admin-page.active { display: block; }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--gold);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        header h1 {
+            color: var(--gold);
+            font-size: 2rem;
+        }
+        header p {
+            color: var(--muted);
+            margin-top: 10px;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--red);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: var(--gold);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--gold);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            color: var(--gold);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        /* 二维码卡片 */
+        .qrcode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .qrcode-card {
+            background: rgba(255,255,255,0.03);
+            border: 2px dashed rgba(255,215,0,0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .qrcode-card:hover {
+            border-color: var(--gold);
+            background: rgba(255,215,0,0.05);
+        }
+        .qrcode-card.has-image {
+            border-style: solid;
+            border-color: var(--green);
+        }
+        .qrcode-card h3 {
+            color: var(--gold);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .qrcode-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .qrcode-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .qrcode-preview .placeholder {
+            color: var(--muted);
+            font-size: 3rem;
+        }
+        .upload-area {
+            border: 2px dashed rgba(255,215,0,0.3);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: var(--gold);
+            background: rgba(255,215,0,0.05);
+        }
+        .upload-area .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .upload-area p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), #FFA500);
+            color: #000;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .btn-danger {
+            background: var(--red);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .btn-success {
+            background: var(--green);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .status-ok {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--green);
+        }
+        .status-missing {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--red);
+        }
+        
+        .tips {
+            background: rgba(255,215,0,0.1);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 20px;
+        }
+        .tips h4 {
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        .tips ol {
+            color: var(--muted);
+            line-height: 2;
+            padding-left: 20px;
+        }
+        
+        .hidden { display: none !important; }
+        
+        @media (max-width: 768px) {
+            .qrcode-grid { grid-template-columns: 1fr; }
+            .logout-btn, .back-btn {
+                position: static;
+                margin: 10px;
+            }
+            header {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div class="login-page" id="loginPage">
+        <div class="login-box">
+            <h1>💳 收款码管理</h1>
+            <input type="password" id="adminPassword" placeholder="请输入管理员密码" maxlength="20">
+            <button onclick="login()">进入管理系统</button>
+            <p style="color: var(--muted); margin-top: 20px; font-size: 0.9rem;">默认密码：TIANDAO888</p>
+            <a href="index.html" style="color: var(--gold); margin-top: 15px; display: inline-block;">← 返回首页</a>
+        </div>
+    </div>
+
+    <!-- 管理页面 -->
+    <div class="admin-page" id="adminPage">
+        <header>
+            <a href="super-admin.html" class="back-btn">← 管理后台</a>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+            <h1>💳 收款二维码管理</h1>
+            <p>上传和管理微信、支付宝收款码</p>
+        </header>
+
+        <div class="container">
+            <!-- 二维码上传区 -->
+            <div class="section">
+                <h2>📱 上传收款码</h2>
+                <div class="qrcode-grid">
+                    <!-- 微信收款码 -->
+                    <div class="qrcode-card" id="wechatCard">
+                        <h3>💬 微信收款码</h3>
+                        <div class="qrcode-preview" id="wechatPreview">
+                            <div class="placeholder">💬</div>
+                        </div>
+                        <div class="upload-area" onclick="document.getElementById('wechatInput').click()">
+                            <div class="icon">📤</div>
+                            <p>点击上传微信收款码</p>
+                            <p style="font-size: 0.8rem; margin-top: 5px;">支持 JPG、PNG 格式</p>
+                        </div>
+                        <input type="file" id="wechatInput" accept="image/*" onchange="handleUpload('wechat', this)">
+                        <div id="wechatStatus"></div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn-success" onclick="saveQRCode('wechat')" id="wechatSaveBtn" style="display: none;">保存</button>
+                            <button class="btn-danger" onclick="clearQRCode('wechat')" id="wechatClearBtn" style="display: none;">删除</button>
+                        </div>
+                    </div>
+
+                    <!-- 支付宝收款码 -->
+                    <div class="qrcode-card" id="alipayCard">
+                        <h3>💎 支付宝收款码</h3>
+                        <div class="qrcode-preview" id="alipayPreview">
+                            <div class="placeholder">💎</div>
+                        </div>
+                        <div class="upload-area" onclick="document.getElementById('alipayInput').click()">
+                            <div class="icon">📤</div>
+                            <p>点击上传支付宝收款码</p>
+                            <p style="font-size: 0.8rem; margin-top: 5px;">支持 JPG、PNG 格式</p>
+                        </div>
+                        <input type="file" id="alipayInput" accept="image/*" onchange="handleUpload('alipay', this)">
+                        <div id="alipayStatus"></div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn-success" onclick="saveQRCode('alipay')" id="alipaySaveBtn" style="display: none;">保存</button>
+                            <button class="btn-danger" onclick="clearQRCode('alipay')" id="alipayClearBtn" style="display: none;">删除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 使用说明 -->
+            <div class="section">
+                <h2>📖 使用说明</h2>
+                <div class="tips">
+                    <h4>如何获取收款码</h4>
+                    <ol>
+                        <li><strong>微信收款码：</strong>打开微信 → 我 → 服务 → 收付款 → 二维码收款 → 保存图片</li>
+                        <li><strong>支付宝收款码：</strong>打开支付宝 → 首页 → 收钱 → 保存图片</li>
+                        <li>在本页面上传保存的二维码图片</li>
+                        <li>点击"保存"按钮，二维码将存储在浏览器中</li>
+                        <li>用户在支付页面即可看到您的收款码</li>
+                    </ol>
+                </div>
+                <div class="tips" style="margin-top: 15px;">
+                    <h4>⚠️ 注意事项</h4>
+                    <ol>
+                        <li>二维码数据存储在浏览器本地，更换设备需要重新上传</li>
+                        <li>建议定期更换收款码，确保账户安全</li>
+                        <li>图片格式支持 JPG、PNG，建议大小不超过 500KB</li>
+                        <li>如需备份，可使用浏览器的导出功能</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- 数据管理 -->
+            <div class="section">
+                <h2>⚙️ 数据管理</h2>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="exportData()">📥 导出数据</button>
+                    <button class="btn-danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
+                </div>
+                <p style="color: var(--muted); margin-top: 15px; font-size: 0.9rem;">
+                    导出功能可以将二维码数据保存为JSON文件，方便备份或在其他设备上恢复。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 管理员密码
+        const ADMIN_PASSWORD = 'TIANDAO888';
+        
+        // 临时存储上传的图片
+        const tempImages = {
+            wechat: null,
+            alipay: null
+        };
+        
+        // 登录
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                localStorage.setItem('qrcodeAdminLoggedIn', 'true');
+                showAdminPage();
+                loadExistingQRCodes();
+            } else {
+                alert('密码错误！');
+            }
+        }
+        
+        // 退出
+        function logout() {
+            localStorage.removeItem('qrcodeAdminLoggedIn');
+            location.reload();
+        }
+        
+        // 显示管理页面
+        function showAdminPage() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.add('active');
+        }
+        
+        // 检查登录状态
+        if (localStorage.getItem('qrcodeAdminLoggedIn') === 'true') {
+            showAdminPage();
+            loadExistingQRCodes();
+        }
+        
+        // 处理上传
+        function handleUpload(type, input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('请上传图片文件！');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片太大，请上传小于2MB的图片！');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgData = e.target.result;
+                tempImages[type] = imgData;
+                
+                // 显示预览
+                const preview = document.getElementById(type + 'Preview');
+                preview.innerHTML = `<img src="${imgData}" alt="${type}收款码">`;
+                
+                // 更新卡片样式
+                document.getElementById(type + 'Card').classList.add('has-image');
+                
+                // 显示保存按钮
+                document.getElementById(type + 'SaveBtn').style.display = 'inline-block';
+                document.getElementById(type + 'ClearBtn').style.display = 'inline-block';
+                
+                // 更新状态
+                document.getElementById(type + 'Status').innerHTML = 
+                    '<span class="status-badge status-ok">✓ 已选择图片，请点击保存</span>';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // 保存二维码
+        function saveQRCode(type) {
+            if (!tempImages[type]) {
+                alert('请先上传图片！');
+                return;
+            }
+            
+            // 保存到localStorage
+            localStorage.setItem(type + '_qrcode', tempImages[type]);
+            localStorage.setItem(type + '_qrcode_time', new Date().toISOString());
+            
+            alert((type === 'wechat' ? '微信' : '支付宝') + '收款码保存成功！');
+            
+            // 更新状态
+            document.getElementById(type + 'Status').innerHTML = 
+                '<span class="status-badge status-ok">✓ 已保存</span>';
+        }
+        
+        // 加载已存在的二维码
+        function loadExistingQRCodes() {
+            ['wechat', 'alipay'].forEach(type => {
+                const savedData = localStorage.getItem(type + '_qrcode');
+                if (savedData) {
+                    const preview = document.getElementById(type + 'Preview');
+                    preview.innerHTML = `<img src="${savedData}" alt="${type}收款码">`;
+                    document.getElementById(type + 'Card').classList.add('has-image');
+                    document.getElementById(type + 'ClearBtn').style.display = 'inline-block';
+                    
+                    const saveTime = localStorage.getItem(type + '_qrcode_time');
+                    const timeStr = saveTime ? new Date(saveTime).toLocaleString() : '未知时间';
+                    document.getElementById(type + 'Status').innerHTML = 
+                        `<span class="status-badge status-ok">✓ 已保存 (${timeStr})</span>`;
+                    
+                    tempImages[type] = savedData;
+                } else {
+                    document.getElementById(type + 'Status').innerHTML = 
+                        '<span class="status-badge status-missing">✗ 未设置</span>';
+                }
+            });
+        }
+        
+        // 删除二维码
+        function clearQRCode(type) {
+            if (!confirm('确定删除' + (type === 'wechat' ? '微信' : '支付宝') + '收款码？')) return;
+            
+            localStorage.removeItem(type + '_qrcode');
+            localStorage.removeItem(type + '_qrcode_time');
+            tempImages[type] = null;
+            
+            // 重置显示
+            const preview = document.getElementById(type + 'Preview');
+            preview.innerHTML = `<div class="placeholder">${type === 'wechat' ? '💬' : '💎'}</div>`;
+            document.getElementById(type + 'Card').classList.remove('has-image');
+            document.getElementById(type + 'SaveBtn').style.display = 'none';
+            document.getElementById(type + 'ClearBtn').style.display = 'none';
+            document.getElementById(type + 'Status').innerHTML = 
+                '<span class="status-badge status-missing">✗ 未设置</span>';
+            
+            // 清空文件输入
+            document.getElementById(type + 'Input').value = '';
+        }
+        
+        // 导出数据
+        function exportData() {
+            const data = {
+                wechat: localStorage.getItem('wechat_qrcode'),
+                alipay: localStorage.getItem('alipay_qrcode'),
+                wechat_time: localStorage.getItem('wechat_qrcode_time'),
+                alipay_time: localStorage.getItem('alipay_qrcode_time'),
+                export_time: new Date().toISOString()
+            };
+            
+            if (!data.wechat && !data.alipay) {
+                alert('没有可导出的数据！');
+                return;
+            }
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qrcode-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('数据导出成功！');
+        }
+        
+        // 清空所有数据
+        function clearAllData() {
+            if (!confirm('确定清空所有收款码数据？此操作不可恢复！')) return;
+            if (!confirm('再次确认：真的要删除所有数据吗？')) return;
+            
+            localStorage.removeItem('wechat_qrcode');
+            localStorage.removeItem('alipay_qrcode');
+            localStorage.removeItem('wechat_qrcode_time');
+            localStorage.removeItem('alipay_qrcode_time');
+            
+            tempImages.wechat = null;
+            tempImages.alipay = null;
+            
+            // 重置显示
+            ['wechat', 'alipay'].forEach(type => {
+                const preview = document.getElementById(type + 'Preview');
+                preview.innerHTML = `<div class="placeholder">${type === 'wechat' ? '💬' : '💎'}</div>`;
+                document.getElementById(type + 'Card').classList.remove('has-image');
+                document.getElementById(type + 'SaveBtn').style.display = 'none';
+                document.getElementById(type + 'ClearBtn').style.display = 'none';
+                document.getElementById(type + 'Status').innerHTML = 
+                    '<span class="status-badge status-missing">✗ 未设置</span>';
+                document.getElementById(type + 'Input').value = '';
+            });
+            
+            alert('所有数据已清空！');
+        }
+        
+        // 回车登录
+        document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

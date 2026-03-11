@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>六爻排盘 - 天道元一</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #f0f0f0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .form-item {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            color: #f0f0f0;
+            font-size: 16px;
+        }
+        
+        .form-input::placeholder {
+            color: #666;
+        }
+        
+        .yao-input-method {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .method-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            color: #f0f0f0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .method-btn.active {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .yao-coins {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .yao-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+        
+        .yao-label {
+            color: #FFD700;
+            font-size: 14px;
+        }
+        
+        .yao-coin-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .yao-coin {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+            color: #FFD700;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        .yao-coin::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            transform: rotateY(180deg);
+            backface-visibility: hidden;
+        }
+        
+        .yao-coin.active {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            transform: rotateY(0);
+        }
+        
+        .yao-coin.shaking {
+            animation: coinShake 0.5s ease-in-out;
+        }
+        
+        @keyframes coinShake {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            25% { transform: translateY(-30px) rotate(180deg); }
+            50% { transform: translateY(0) rotate(360deg); }
+            75% { transform: translateY(-15px) rotate(540deg); }
+        }
+        
+        .yao-coin.flipping {
+            animation: coinFlip 0.6s ease-in-out;
+        }
+        
+        @keyframes coinFlip {
+            0% { transform: rotateY(0); }
+            50% { transform: rotateY(900deg) scale(1.2); }
+            100% { transform: rotateY(1800deg); }
+        }
+        
+        /* 摇卦按钮 */
+        .shake-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            color: #000;
+            border: none;
+            padding: 20px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .shake-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+        }
+        
+        .shake-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .shake-btn.shaking {
+            animation: btnShake 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes btnShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .yao-result {
+            font-size: 30px;
+            margin-left: 10px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .gua-display {
+            background: rgba(255, 215, 0, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .gua-title {
+            text-align: center;
+            color: #FFD700;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .gua-main {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        
+        .gua-section {
+            text-align: center;
+        }
+        
+        .gua-section-title {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .gua-yao {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .yao-line {
+            width: 80px;
+            height: 8px;
+            background: #FFD700;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .yao-line.yin {
+            background: transparent;
+            border: 2px solid #FFD700;
+        }
+        
+        .yao-line.yin::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #0a0a0f;
+            transform: translateX(-50%);
+        }
+        
+        .yao-line.dong {
+            box-shadow: 0 0 10px #FFD700;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .gua-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .gua-name {
+            font-size: 28px;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+        
+        .gua-desc {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .analysis-section {
+            margin-top: 30px;
+        }
+        
+        .analysis-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #FFD700;
+            border-radius: 0 15px 15px 0;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .analysis-title {
+            color: #FFD700;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .analysis-content {
+            color: #f0f0f0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .wuxing-analysis {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .wuxing-item {
+            text-align: center;
+            padding: 15px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .wuxing-name {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .wuxing-status {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #FFD700;
+            font-size: 16px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .tips-section {
+            background: rgba(255, 215, 0, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tips-title {
+            color: #FFD700;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .tips-list {
+            list-style: none;
+        }
+        
+        .tips-list li {
+            color: #888;
+            font-size: 13px;
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .tips-list li::before {
+            content: "•";
+            color: #FFD700;
+            position: absolute;
+            left: 0;
+        }
+        
+        .time-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .time-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .time-value {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☯ 六爻排盘</h1>
+            <p>输入卦象生成报告，分析吉凶并提供决策参考</p>
+        </div>
+
+        <!-- 输入区 -->
+        <div id="inputSection">
+            <div class="card">
+                <div class="card-title">起卦信息</div>
+                
+                <div class="time-display">
+                    <div class="time-label">当前时间</div>
+                    <div class="time-value" id="currentTime"></div>
+                </div>
+                
+                <div class="form-item">
+                    <label class="form-label">您的问题</label>
+                    <input type="text" class="form-input" id="questionInput" placeholder="请输入您要占卜的问题">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">选择起卦方式</div>
+                <div class="yao-input-method">
+                    <button class="method-btn active" data-method="coin">铜钱摇卦</button>
+                    <button class="method-btn" data-method="time">时间起卦</button>
+                    <button class="method-btn" data-method="number">数字起卦</button>
+                </div>
+
+                <!-- 铜钱摇卦 -->
+                <div id="coinMethod">
+                    <div class="yao-coins" id="coinArea">
+                        <div class="yao-row">
+                            <span class="yao-label">第六爻（上爻）</span>
+                            <div class="yao-coin-group" id="yao6">
+                                <button class="yao-coin" data-yao="6" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="6" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="6" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result6">-</span>
+                        </div>
+                        <div class="yao-row">
+                            <span class="yao-label">第五爻</span>
+                            <div class="yao-coin-group" id="yao5">
+                                <button class="yao-coin" data-yao="5" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="5" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="5" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result5">-</span>
+                        </div>
+                        <div class="yao-row">
+                            <span class="yao-label">第四爻</span>
+                            <div class="yao-coin-group" id="yao4">
+                                <button class="yao-coin" data-yao="4" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="4" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="4" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result4">-</span>
+                        </div>
+                        <div class="yao-row">
+                            <span class="yao-label">第三爻</span>
+                            <div class="yao-coin-group" id="yao3">
+                                <button class="yao-coin" data-yao="3" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="3" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="3" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result3">-</span>
+                        </div>
+                        <div class="yao-row">
+                            <span class="yao-label">第二爻</span>
+                            <div class="yao-coin-group" id="yao2">
+                                <button class="yao-coin" data-yao="2" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="2" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="2" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result2">-</span>
+                        </div>
+                        <div class="yao-row">
+                            <span class="yao-label">第一爻（初爻）</span>
+                            <div class="yao-coin-group" id="yao1">
+                                <button class="yao-coin" data-yao="1" data-coin="1">正</button>
+                                <button class="yao-coin" data-yao="1" data-coin="2">正</button>
+                                <button class="yao-coin" data-yao="1" data-coin="3">正</button>
+                            </div>
+                            <span class="yao-result" id="result1">-</span>
+                        </div>
+                    </div>
+                    <button class="shake-btn" id="shakeBtn" onclick="shakeCoins()">
+                        <span>🪙</span>
+                        <span>开始摇卦（点击六次）</span>
+                    </button>
+                    <button class="btn-secondary" onclick="randomCoins()">🎲 随机起卦</button>
+                </div>
+
+                <!-- 时间起卦 -->
+                <div id="timeMethod" class="hidden">
+                    <p style="color: #888; text-align: center; padding: 20px;">系统将自动根据当前时间生成卦象</p>
+                </div>
+
+                <!-- 数字起卦 -->
+                <div id="numberMethod" class="hidden">
+                    <div class="form-item">
+                        <label class="form-label">上卦数字（1-8）</label>
+                        <input type="number" class="form-input" id="upperNum" min="1" max="8" placeholder="请输入1-8的数字">
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">下卦数字（1-8）</label>
+                        <input type="number" class="form-input" id="lowerNum" min="1" max="8" placeholder="请输入1-8的数字">
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">动爻数字（1-6）</label>
+                        <input type="number" class="form-input" id="dongNum" min="1" max="6" placeholder="请输入1-6的数字">
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="generateGua()">生成卦象</button>
+            </div>
+
+            <div class="tips-section">
+                <div class="tips-title">💡 起卦说明</div>
+                <ul class="tips-list">
+                    <li><strong>铜钱摇卦：</strong>传统方法，三枚铜钱摇六次</li>
+                    <li><strong>时间起卦：</strong>以当前年月日时起卦</li>
+                    <li><strong>数字起卦：</strong>心中默想数字起卦</li>
+                    <li>起卦前请静心默念所问之事</li>
+                    <li>一事一卦，不要重复起卦</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loadingSection" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在排盘分析...</div>
+        </div>
+
+        <!-- 结果区 -->
+        <div id="resultSection" class="hidden">
+            <div class="gua-display">
+                <div class="gua-title">卦象排盘</div>
+                <div class="gua-main">
+                    <div class="gua-section">
+                        <div class="gua-section-title">本卦</div>
+                        <div class="gua-yao" id="benGua"></div>
+                    </div>
+                    <div class="gua-section">
+                        <div class="gua-section-title">变卦</div>
+                        <div class="gua-yao" id="bianGua"></div>
+                    </div>
+                </div>
+                <div class="gua-info">
+                    <div class="gua-name" id="guaName">-</div>
+                    <div class="gua-desc" id="guaDesc">-</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">五行分析</div>
+                <div class="wuxing-analysis" id="wuxingAnalysis"></div>
+            </div>
+
+            <div class="card analysis-section">
+                <div class="card-title">📊 卦象解析</div>
+                <div id="analysisContent"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 吉凶判断</div>
+                <div id="fortuneContent"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💡 决策建议</div>
+                <div id="adviceContent"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">📚 经典卦例</div>
+                <div id="caseContent"></div>
+            </div>
+
+            <button class="btn-secondary" onclick="resetGua()">重新起卦</button>
+        </div>
+    </div>
+
+    <script>
+        // 六十四卦数据
+        const guaData = {
+            '111111': { name: '乾为天', desc: '元亨利贞', fortune: '大吉', advice: '刚健中正，自强不息' },
+            '000000': { name: '坤为地', desc: '元亨利牝马之贞', fortune: '吉', advice: '厚德载物，柔顺守正' },
+            '100010': { name: '水雷屯', desc: '元亨利贞，勿用有攸往', fortune: '小吉', advice: '艰难初创，宜守不宜进' },
+            '010001': { name: '山水蒙', desc: '亨。匪我求童蒙，童蒙求我', fortune: '中吉', advice: '启蒙教育，循序渐进' },
+            '111010': { name: '水天需', desc: '有孚，光亨，贞吉', fortune: '吉', advice: '等待时机，不可急躁' },
+            '010111': { name: '天水讼', desc: '有孚，窒惕，中吉', fortune: '小凶', advice: '慎防争讼，以和为贵' },
+            '010000': { name: '地水师', desc: '贞，丈人吉，无咎', fortune: '中吉', advice: '行险而顺，用人唯贤' },
+            '000010': { name: '水地比', desc: '吉。原筮元永贞，无咎', fortune: '吉', advice: '亲比团结，诚信待人' },
+            '111011': { name: '风天小畜', desc: '亨。密云不雨', fortune: '小吉', advice: '小有蓄积，待机而动' },
+            '110111': { name: '天泽履', desc: '履虎尾，不咥人，亨', fortune: '吉', advice: '谨慎行事，循礼而行' },
+            '111000': { name: '地天泰', desc: '小往大来，吉亨', fortune: '大吉', advice: '天地交泰，万事亨通' },
+            '000111': { name: '天地否', desc: '否之匪人，不利君子贞', fortune: '凶', advice: '天地不交，守静待时' },
+            '101111': { name: '天火同人', desc: '同人于野，亨', fortune: '吉', advice: '同人于野，光明正大' },
+            '111101': { name: '火天大有', desc: '元亨', fortune: '大吉', advice: '大有收获，遏恶扬善' }
+        };
+
+        let currentMethod = 'coin';
+        let yaoResults = [null, null, null, null, null, null];
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + 
+                          ['日', '一', '二', '三', '四', '五', '六'][now.getDay()] + ' ' +
+                          String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // 切换起卦方式
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMethod = this.dataset.method;
+                
+                document.getElementById('coinMethod').classList.toggle('hidden', currentMethod !== 'coin');
+                document.getElementById('timeMethod').classList.toggle('hidden', currentMethod !== 'time');
+                document.getElementById('numberMethod').classList.toggle('hidden', currentMethod !== 'number');
+            });
+        });
+
+        // 铜钱点击
+        document.querySelectorAll('.yao-coin').forEach(coin => {
+            coin.addEventListener('click', function() {
+                this.classList.toggle('active');
+                this.textContent = this.classList.contains('active') ? '反' : '正';
+                updateYaoResult(parseInt(this.dataset.yao));
+            });
+        });
+
+        // 更新爻结果
+        function updateYaoResult(yaoNum) {
+            const coins = document.querySelectorAll(`.yao-coin[data-yao="${yaoNum}"]`);
+            let count = 0;
+            coins.forEach(c => {
+                if (c.classList.contains('active')) count++;
+            });
+            
+            let result, type;
+            switch (count) {
+                case 0: result = '⚊'; type = 'yang'; break;
+                case 1: result = '⚋'; type = 'yin'; break;
+                case 2: result = '⚋'; type = 'yin'; break;
+                case 3: result = '⚊'; type = 'yang-dong'; break;
+            }
+            
+            yaoResults[yaoNum - 1] = { value: result, type: type, dong: count === 0 || count === 3 };
+            document.getElementById(`result${yaoNum}`).textContent = result;
+        }
+
+        // 摇卦计数
+        let shakeCount = 0;
+        const yaoNames = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻'];
+        
+        // 经典卦例库
+        const caseStudies = {
+            '111111': { // 乾卦
+                title: '乾为天 · 元亨利贞',
+                story: '《周易》首卦，象征天行健，君子以自强不息。',
+                examples: [
+                    { name: '文王演易', desc: '周文王被囚羑里，演《周易》六十四卦，终成大业。' },
+                    { name: '孔子读易', desc: '孔子韦编三绝，读《易》至"天行健"而悟道。' }
+                ]
+            },
+            '000000': { // 坤卦
+                title: '坤为地 · 厚德载物',
+                story: '地势坤，君子以厚德载物。',
+                examples: [
+                    { name: '大地生养', desc: '大地承载万物，默默奉献而不争。' }
+                ]
+            },
+            '010001': { // 水雷屯
+                title: '水雷屯 · 始生之难',
+                story: '刚柔始交而难生，动乎险中。',
+                examples: [
+                    { name: '创业初期', desc: '如种子破土，虽有艰难，终将成长。' }
+                ]
+            },
+            '111010': { // 天火同人
+                title: '天火同人 · 同人于野',
+                story: '同人于野，亨。利涉大川，利君子贞。',
+                examples: [
+                    { name: '桃园结义', desc: '刘备、关羽、张飞志同道合，共创大业。' }
+                ]
+            },
+            '101111': { // 火天大有
+                title: '火天大有 · 大有收获',
+                story: '大有，元亨。柔得尊位，大中而上下应之。',
+                examples: [
+                    { name: '丰收之年', desc: '阳光普照，万物生长，大有收获之象。' }
+                ]
+            },
+            'default': {
+                title: '卦象解读',
+                story: '卦象显示当前处境与变化趋势。',
+                examples: [
+                    { name: '审时度势', desc: '根据卦象变化，把握时机，顺势而为。' }
+                ]
+            }
+        };
+        
+        // 铜钱摇卦动画
+        function shakeCoins() {
+            if (shakeCount >= 6) {
+                alert('六爻已毕，请查看卦象结果');
+                return;
+            }
+            
+            const yaoNum = 6 - shakeCount;
+            const coinGroup = document.getElementById(`yao${yaoNum}`);
+            const coins = coinGroup.querySelectorAll('.yao-coin');
+            const btn = document.getElementById('shakeBtn');
+            
+            // 禁用按钮
+            btn.disabled = true;
+            btn.classList.add('shaking');
+            btn.innerHTML = '<span>🪙</span><span>摇卦中...</span>';
+            
+            // 触觉反馈
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100, 50, 100]);
+            }
+            
+            // 铜钱动画
+            coins.forEach((coin, i) => {
+                setTimeout(() => {
+                    coin.classList.add('shaking');
+                }, i * 100);
+            });
+            
+            // 生成结果
+            setTimeout(() => {
+                // 随机决定正反面
+                coins.forEach(coin => {
+                    coin.classList.remove('shaking');
+                    const isBack = Math.random() > 0.5;
+                    if (isBack) {
+                        coin.classList.add('active');
+                        coin.textContent = '反';
+                    } else {
+                        coin.classList.remove('active');
+                        coin.textContent = '正';
+                    }
+                });
+                
+                // 更新爻结果
+                updateYaoResult(yaoNum);
+                
+                shakeCount++;
+                
+                // 更新按钮
+                btn.classList.remove('shaking');
+                btn.disabled = false;
+                
+                if (shakeCount >= 6) {
+                    btn.innerHTML = '<span>✨</span><span>六爻已毕，查看结果</span>';
+                    btn.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    btn.onclick = generateGua;
+                    
+                    // 自动显示结果
+                    setTimeout(() => {
+                        if (confirm('六爻摇毕，是否立即查看卦象解读？')) {
+                            generateGua();
+                        }
+                    }, 500);
+                } else {
+                    btn.innerHTML = `<span>🪙</span><span>第 ${shakeCount + 1} 次摇卦（共6次）</span>`;
+                }
+            }, 1500);
+        }
+        
+        // 重置摇卦
+        function resetShake() {
+            shakeCount = 0;
+            const btn = document.getElementById('shakeBtn');
+            btn.innerHTML = '<span>🪙</span><span>开始摇卦（点击六次）</span>';
+            btn.style.background = 'linear-gradient(135deg, #FFD700, #FF6B6B)';
+            btn.onclick = shakeCoins;
+            btn.disabled = false;
+        }
+
+        // 生成卦象
+        function generateGua() {
+            const question = document.getElementById('questionInput').value;
+            if (!question) {
+                alert('请输入您要占卜的问题');
+                return;
+            }
+
+            document.getElementById('inputSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+
+            setTimeout(() => {
+                showResult();
+            }, 1500);
+        }
+
+        // 显示结果
+        function showResult() {
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+
+            // 生成随机卦象
+            const benYao = [];
+            const bianYao = [];
+            const dongYao = [];
+            
+            for (let i = 0; i < 6; i++) {
+                const isYang = Math.random() > 0.5;
+                const isDong = Math.random() > 0.8;
+                
+                benYao.push({ yang: isYang, dong: isDong });
+                bianYao.push({ yang: isDong ? !isYang : isYang, dong: false });
+                if (isDong) dongYao.push(i);
+            }
+
+            // 显示本卦
+            const benGuaHtml = benYao.map((yao, i) => `
+                <div class="yao-line ${yao.yang ? '' : 'yin'} ${yao.dong ? 'dong' : ''}"></div>
+            `).reverse().join('');
+            document.getElementById('benGua').innerHTML = benGuaHtml;
+
+            // 显示变卦
+            const bianGuaHtml = bianYao.map((yao, i) => `
+                <div class="yao-line ${yao.yang ? '' : 'yin'}"></div>
+            `).reverse().join('');
+            document.getElementById('bianGua').innerHTML = bianGuaHtml;
+
+            // 卦名
+            const guaKey = benYao.map(y => y.yang ? '1' : '0').join('');
+            const guaInfo = guaData[guaKey] || { name: '未知卦', desc: '请重新起卦', fortune: '中平', advice: '谨慎行事' };
+            
+            document.getElementById('guaName').textContent = guaInfo.name;
+            document.getElementById('guaDesc').textContent = guaInfo.desc;
+
+            // 五行分析
+            const wuxing = ['金', '木', '水', '火', '土'];
+            const wuxingHtml = wuxing.map(w => `
+                <div class="wuxing-item">
+                    <div class="wuxing-name">${w}</div>
+                    <div class="wuxing-status">${['旺', '相', '休', '囚', '死'][Math.floor(Math.random() * 5)]}</div>
+                </div>
+            `).join('');
+            document.getElementById('wuxingAnalysis').innerHTML = wuxingHtml;
+
+            // 卦象解析
+            document.getElementById('analysisContent').innerHTML = `
+                <div class="analysis-card">
+                    <div class="analysis-title">卦象总论</div>
+                    <div class="analysis-content">
+                        本卦为${guaInfo.name}，${guaInfo.desc}。卦象显示您所问之事${guaInfo.fortune === '大吉' || guaInfo.fortune === '吉' ? '总体向好' : '需要谨慎'}。
+                        ${dongYao.length > 0 ? '动爻在' + dongYao.map(i => ['初', '二', '三', '四', '五', '上'][i] + '爻').join('、') + '，表示事情会有变化。' : '六爻皆静，事情发展平稳。'}
+                    </div>
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-title">用神分析</div>
+                    <div class="analysis-content">
+                        用神${Math.random() > 0.5 ? '旺相' : '休囚'}，${Math.random() > 0.5 ? '得月令生扶，事情有利' : '受月建克制，需要努力'}。
+                        世爻${Math.random() > 0.5 ? '临青龙，主喜庆之事' : '临白虎，主有阻碍'}。
+                    </div>
+                </div>
+            `;
+
+            // 吉凶判断
+            document.getElementById('fortuneContent').innerHTML = `
+                <div class="analysis-card">
+                    <div class="analysis-title">总体判断：${guaInfo.fortune}</div>
+                    <div class="analysis-content">
+                        <p style="margin-bottom: 10px;"><strong>有利因素：</strong></p>
+                        <ul style="margin-left: 20px; margin-bottom: 15px;">
+                            <li>卦象${guaInfo.fortune === '大吉' || guaInfo.fortune === '吉' ? '显示时机成熟' : '提示需要等待'}</li>
+                            <li>用神${Math.random() > 0.5 ? '得位' : '虽不得位但有救应'}</li>
+                            <li>变卦${Math.random() > 0.5 ? '趋向吉利' : '提示变化'}</li>
+                        </ul>
+                        <p style="margin-bottom: 10px;"><strong>不利因素：</strong></p>
+                        <ul style="margin-left: 20px;">
+                            <li>${Math.random() > 0.5 ? '需防小人暗算' : '注意时机把握'}</li>
+                            <li>${Math.random() > 0.5 ? '不宜急躁冒进' : '谨慎处理细节'}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // 决策建议
+            document.getElementById('adviceContent').innerHTML = `
+                <div class="analysis-content">
+                    <p style="margin-bottom: 15px;">${guaInfo.advice}</p>
+                    <p style="margin-bottom: 10px;"><strong>具体建议：</strong></p>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>${guaInfo.fortune === '大吉' || guaInfo.fortune === '吉' ? '可以积极推进，把握时机' : '宜守不宜攻，等待时机'}</li>
+                        <li>注意${['东方', '南方', '西方', '北方'][Math.floor(Math.random() * 4)]}方位，${Math.random() > 0.5 ? '利于求财' : '利于合作'}</li>
+                        <li>${Math.random() > 0.5 ? '本月内会有消息' : '下月运势会好转'}</li>
+                        <li>建议多穿${['白色', '黑色', '绿色', '红色', '黄色'][Math.floor(Math.random() * 5)]}色系衣服增运</li>
+                    </ul>
+                </div>
+            `;
+            
+            // 添加经典卦例
+            const caseStudy = caseStudies[guaKey] || caseStudies['default'];
+            const caseHtml = `
+                <div class="analysis-card" style="margin-top: 20px; border-color: rgba(255,215,0,0.5);">
+                    <div class="analysis-title">📜 经典卦例</div>
+                    <div class="analysis-content">
+                        <div style="background: rgba(255,215,0,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="font-size: 18px; color: #FFD700; margin-bottom: 8px;">${caseStudy.title}</div>
+                            <div style="color: #E0E0E0; font-size: 14px; line-height: 1.8;">${caseStudy.story}</div>
+                        </div>
+                        ${caseStudy.examples.map(ex => `
+                            <div style="margin-bottom: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                <div style="color: #FFD700; font-size: 14px; margin-bottom: 5px;">📖 ${ex.name}</div>
+                                <div style="color: #888; font-size: 13px; line-height: 1.6;">${ex.desc}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('adviceContent').insertAdjacentHTML('beforeend', caseHtml);
+        }
+
+        // 重置
+        function resetGua() {
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('inputSection').classList.remove('hidden');
+            yaoResults = [null, null, null, null, null, null];
+            document.querySelectorAll('.yao-coin').forEach(c => {
+                c.classList.remove('active');
+                c.textContent = '正';
+            });
+            document.querySelectorAll('.yao-result').forEach(r => r.textContent = '-');
+        }
+    </script>
+</body>
+</html>
