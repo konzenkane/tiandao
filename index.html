@@ -274,12 +274,6 @@
             letter-spacing: 2px;
         }
         
-        .user-stats-label {
-            color: #4CAF50;
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -848,8 +842,7 @@
             <span class="user-stats-icon">👥</span>
             <span class="user-stats-text">已有</span>
             <span class="user-stats-number" id="userCount">928,666</span>
-            <span class="user-stats-text">位缘主</span>
-            <span class="user-stats-label">● 在线</span>
+            <span class="user-stats-text">位缘主到访</span>
         </div>
         <div class="free-badge">✨ 每日免费8次</div>
     </header>
@@ -1545,39 +1538,72 @@
         
         // 用户统计数字动画
         function initUserCount() {
-            const targetCount = 928666; // 目标数字
-            const duration = 2000; // 动画时长2秒
             const element = document.getElementById('userCount');
+            const storageKey = 'tiandao_user_count';
+            const lastUpdateKey = 'tiandao_user_count_last_update';
             
-            let startTime = null;
-            const startCount = Math.floor(targetCount * 0.95); // 从95%开始
+            // 从localStorage读取已保存的数字，没有则使用初始值
+            let currentCount = parseInt(localStorage.getItem(storageKey)) || 928666;
+            const lastUpdate = parseInt(localStorage.getItem(lastUpdateKey)) || Date.now();
             
-            function animate(currentTime) {
-                if (!startTime) startTime = currentTime;
-                const elapsed = currentTime - startTime;
+            // 计算从上次更新到现在应该增加的人数（模拟增长）
+            const now = Date.now();
+            const hoursPassed = (now - lastUpdate) / (1000 * 60 * 60); // 经过的小时数
+            const estimatedNewUsers = Math.floor(hoursPassed * (Math.random() * 5 + 3)); // 每小时3-8人
+            
+            // 增加估算的新用户
+            currentCount += estimatedNewUsers;
+            
+            // 保存更新后的数字
+            localStorage.setItem(storageKey, currentCount);
+            localStorage.setItem(lastUpdateKey, now);
+            
+            // 显示当前数字
+            element.textContent = formatNumber(currentCount);
+            
+            // 页面可见时，偶尔增加人数（模拟实时访问）
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // 页面重新可见时，随机增加0-2人
+                    const increment = Math.floor(Math.random() * 3);
+                    if (increment > 0) {
+                        currentCount += increment;
+                        localStorage.setItem(storageKey, currentCount);
+                        element.textContent = formatNumber(currentCount);
+                    }
+                }
+            });
+            
+            // 每30秒随机增加1-3人（用户停留在页面时）
+            setInterval(() => {
+                const increment = Math.floor(Math.random() * 3) + 1;
+                currentCount += increment;
+                localStorage.setItem(storageKey, currentCount);
+                localStorage.setItem(lastUpdateKey, Date.now());
+                
+                // 数字滚动动画
+                animateNumber(element, currentCount - increment, currentCount, 500);
+            }, 30000); // 30秒
+        }
+        
+        // 数字滚动动画
+        function animateNumber(element, from, to, duration) {
+            const startTime = Date.now();
+            
+            function update() {
+                const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                
-                // 缓动函数
                 const easeOut = 1 - Math.pow(1 - progress, 3);
-                const currentCount = Math.floor(startCount + (targetCount - startCount) * easeOut);
+                const current = Math.floor(from + (to - from) * easeOut);
                 
-                // 格式化数字
-                element.textContent = formatNumber(currentCount);
+                element.textContent = formatNumber(current);
                 
                 if (progress < 1) {
-                    requestAnimationFrame(animate);
+                    requestAnimationFrame(update);
                 }
             }
             
-            requestAnimationFrame(animate);
-            
-            // 每隔一段时间随机增加（模拟实时用户）
-            setInterval(() => {
-                const currentText = element.textContent.replace(/,/g, '');
-                const current = parseInt(currentText) || targetCount;
-                const increment = Math.floor(Math.random() * 3) + 1; // 随机增加1-3
-                element.textContent = formatNumber(current + increment);
-            }, 15000); // 每15秒增加一次
+            requestAnimationFrame(update);
         }
         
         // 数字格式化（添加千分位逗号）
